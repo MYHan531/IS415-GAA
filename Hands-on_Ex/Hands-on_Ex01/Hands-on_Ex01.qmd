@@ -1,6 +1,7 @@
 ---
-title: "Hands-on Exercise 1"
+title: "Hands-on Exercise 1: Geospatial Data Science with R"
 author: "Han Ming Yan"
+published: "August 19, 2024"
 ---
 
 ## 1.1 Learning Outcome

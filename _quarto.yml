@@ -9,6 +9,36 @@ website:
       menu: 
         - text: "Hands-on Exercsise 1"
           href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
+    - text: "In-Class Exercise"
+      menu:
+        - text: "In-Class Exercsise 1"
+          href: "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html"
+        - text: "In-Class Exercsise 2"
+          href: "In-Class_Ex/In-Class_Ex02/In-Class_Ex02.html"
+        - text: "In-Class Exercsise 3"
+          href: "In-Class_Ex/In-Class_Ex03/In-Class_Ex03.html"
+        - text: "In-Class Exercsise 4"
+          href: "In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html"
+        - text: "In-Class Exercsise 5"
+          href: "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html"
+        - text: "In-Class Exercsise 6"
+          href: "In-Class_Ex/In-Class_Ex06/In-Class_Ex06.html"
+        - text: "In-Class Exercsise 7"
+          href: "In-Class_Ex/In-Class_Ex07/In-Class_Ex07.html"
+        - text: "In-Class Exercsise 9"
+          href: "In-Class_Ex/In-Class_Ex09/In-Class_Ex09.html"
+        - text: "In-Class Exercsise 10"
+          href: "In-Class_Ex/In-Class_Ex10/In-Class_Ex10.html"
+        - text: "In-Class Exercsise 11"
+          href: "In-Class_Ex/In-Class_Ex11/In-Class_Ex11.html"
+        - text: "In-Class Exercsise 12"
+          href: "In-Class_Ex/In-Class_Ex12/In-Class_Ex12.html"
+        - text: "In-Class Exercsise 13"
+          href: "In-Class_Ex/In-Class_Ex12/In-Class_Ex13.html"
+    - text: "Take-Home Exercise"
+      menu:
+        - text: "In-Class Exercsise 1"
+          href: "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html"
     right:
       - href: index.qmd
         text: Home

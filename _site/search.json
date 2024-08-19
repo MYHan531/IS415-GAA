@@ -89,5 +89,40 @@
     "title": "Hands-on Exercise 1: Geospatial Data Science with R",
     "section": "1.10 Exploratory Data Analysis (EDA)",
     "text": "1.10 Exploratory Data Analysis (EDA)\nIn practice, many geospatial analytics start with Exploratory Data Analysis. In this section, you will learn how to use appropriate ggplot2 functions to create functional and yet truthful statistical graphs for EDA purposes.\nFirstly, we will plot a histogram to reveal the distribution of PreSch Density. Conventionally, hist() of R Graphics will be used as shown in the code chunk below.\n\nhist(mpsz3414$`PreSch Density`)\n\n\n\n\n\n\n\n\nAlthough the syntax is very easy to use however the output is far from meeting publication quality. Furthermore, the function has limited room for further customisation.\nIn the code chunk below, appropriate ggplot2 functions will be used.\n\nggplot(data=mpsz3414, \n       aes(x= as.numeric(`PreSch Density`)))+\n  geom_histogram(bins=20, \n                 color=\"black\", \n                 fill=\"light blue\") +\n  labs(title = \"Are pre-school even distributed in Singapore?\",\n       subtitle= \"There are many planning sub-zones with a single pre-school, on the other hand, \\nthere are two planning sub-zones with at least 20 pre-schools\",\n      x = \"Pre-school density (per km sq)\",\n      y = \"Frequency\")\n\n\n\n\n\n\n\n\n\nDIY: Using ggplot2 method, plot a scatterplot showing the relationship between Pre-school Density and Pre-school Count.\n\nThe solution:\n\nggplot(data=mpsz3414, \n       aes(y = `PreSch Count`, \n           x= as.numeric(`PreSch Density`)))+\n  geom_point(color=\"black\", \n             fill=\"light blue\") +\n  xlim(0, 40) +\n  ylim(0, 40) +\n  labs(title = \"\",\n      x = \"Pre-school density (per km sq)\",\n      y = \"Pre-school count\")\n\nWarning: Removed 2 rows containing missing values or values outside the scale range\n(`geom_point()`)."
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html",
+    "href": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html",
+    "title": "In-Class Exercise 1: Geospatial Data Science with R",
+    "section": "",
+    "text": "Geospatial Data Science is a process of importing, wrangling, integrating, and processing geographically referenced data sets. In this hands-on exercise, you will learn how to perform geospatial data science tasks in R by using sf package.\nBy the end of this hands-on exercise, you should acquire the following competencies:\n\ninstalling and loading sf and tidyverse packages into R environment,\nimporting geospatial data by using appropriate functions of sf package,\nimporting aspatial data by using appropriate function of readr package,\nexploring the content of simple feature data frame by using appropriate Base R and sf functions,\nassigning or transforming coordinate systems by using using appropriate sf functions,\nconverting an aspatial data into a sf data frame by using appropriate function of sf package,\nperforming geoprocessing tasks by using appropriate functions of sf package,\nperforming data wrangling tasks by using appropriate functions of dplyr package and\nperforming Exploratory Data Analysis (EDA) by using appropriate functions from ggplot2 package."
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html#learning-outcome",
+    "href": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html#learning-outcome",
+    "title": "In-Class Exercise 1: Geospatial Data Science with R",
+    "section": "",
+    "text": "Geospatial Data Science is a process of importing, wrangling, integrating, and processing geographically referenced data sets. In this hands-on exercise, you will learn how to perform geospatial data science tasks in R by using sf package.\nBy the end of this hands-on exercise, you should acquire the following competencies:\n\ninstalling and loading sf and tidyverse packages into R environment,\nimporting geospatial data by using appropriate functions of sf package,\nimporting aspatial data by using appropriate function of readr package,\nexploring the content of simple feature data frame by using appropriate Base R and sf functions,\nassigning or transforming coordinate systems by using using appropriate sf functions,\nconverting an aspatial data into a sf data frame by using appropriate function of sf package,\nperforming geoprocessing tasks by using appropriate functions of sf package,\nperforming data wrangling tasks by using appropriate functions of dplyr package and\nperforming Exploratory Data Analysis (EDA) by using appropriate functions from ggplot2 package."
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html#data-acquisition",
+    "href": "In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html#data-acquisition",
+    "title": "In-Class Exercise 1: Geospatial Data Science with R",
+    "section": "1.2 Data Acquisition",
+    "text": "1.2 Data Acquisition\nData are key to data analytics including geospatial analytics. Hence, before analysing, we need to assemble the necessary data. In this hands-on exercise, you are required to extract the necessary data sets from the following sources:\n\nMPSZ on elearn"
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex01/data/MPSZ-2019.html",
+    "href": "In-Class_Ex/In-Class_Ex01/data/MPSZ-2019.html",
+    "title": "IS415-GAA",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex01/data/geospatial/MPSZ-2019.html",
+    "href": "Hands-on_Ex/Hands-on_Ex01/data/geospatial/MPSZ-2019.html",
+    "title": "IS415-GAA",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
   }
 ]

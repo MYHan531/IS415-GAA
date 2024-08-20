@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -110,6 +144,50 @@ ul.task-list li input[type="checkbox"] {
     <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html">
  <span class="dropdown-text">In-Class Exercsise 1</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex02/In-Class_Ex02.html">
+ <span class="dropdown-text">In-Class Exercsise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex03/In-Class_Ex03.html">
+ <span class="dropdown-text">In-Class Exercsise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex04/In-Class_Ex04.html">
+ <span class="dropdown-text">In-Class Exercsise 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html">
+ <span class="dropdown-text">In-Class Exercsise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex06/In-Class_Ex06.html">
+ <span class="dropdown-text">In-Class Exercsise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex07/In-Class_Ex07.html">
+ <span class="dropdown-text">In-Class Exercsise 7</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex09/In-Class_Ex09.html">
+ <span class="dropdown-text">In-Class Exercsise 9</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex10/In-Class_Ex10.html">
+ <span class="dropdown-text">In-Class Exercsise 10</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex11/In-Class_Ex11.html">
+ <span class="dropdown-text">In-Class Exercsise 11</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex12/In-Class_Ex12.html">
+ <span class="dropdown-text">In-Class Exercsise 12</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex12/In-Class_Ex13.html">
+ <span class="dropdown-text">In-Class Exercsise 13</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -168,7 +246,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Modified</div>
       <div class="quarto-title-meta-contents">
-        <p class="date-modified">August 19, 2024</p>
+        <p class="date-modified">August 20, 2024</p>
       </div>
     </div>
       
@@ -184,7 +262,23 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link active" data-scroll-target="#learning-outcome">1.1 Learning Outcome</a></li>
-  <li><a href="#data-acquisition" id="toc-data-acquisition" class="nav-link" data-scroll-target="#data-acquisition">1.2 Data Acquisition</a></li>
+  <li><a href="#data-acquisition" id="toc-data-acquisition" class="nav-link" data-scroll-target="#data-acquisition">1.2 Data Acquisition</a>
+  <ul class="collapse">
+  <li><a href="#extracting-the-geospatial-data-sets" id="toc-extracting-the-geospatial-data-sets" class="nav-link" data-scroll-target="#extracting-the-geospatial-data-sets"><strong>1.2.1 Extracting the geospatial data sets</strong></a></li>
+  <li><a href="#extracting-the-aspatial-data-set" id="toc-extracting-the-aspatial-data-set" class="nav-link" data-scroll-target="#extracting-the-aspatial-data-set"><strong>1.2.2 Extracting the aspatial data set</strong></a></li>
+  </ul></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started"><strong>1.3 Getting Started</strong></a></li>
+  <li><a href="#importing-geospatial-data" id="toc-importing-geospatial-data" class="nav-link" data-scroll-target="#importing-geospatial-data"><strong>1.4 Importing Geospatial Data</strong></a>
+  <ul class="collapse">
+  <li><a href="#importing-polygon-feature-data-in-shapefile-format" id="toc-importing-polygon-feature-data-in-shapefile-format" class="nav-link" data-scroll-target="#importing-polygon-feature-data-in-shapefile-format"><strong>1.4.1 Importing polygon feature data in shapefile format</strong></a></li>
+  </ul></li>
+  <li><a href="#checking-the-content-of-a-simple-feature-data-frame" id="toc-checking-the-content-of-a-simple-feature-data-frame" class="nav-link" data-scroll-target="#checking-the-content-of-a-simple-feature-data-frame"><strong>1.5 Checking the Content of A Simple Feature Data Frame</strong></a>
+  <ul class="collapse">
+  <li><a href="#working-with-st_geometry" id="toc-working-with-st_geometry" class="nav-link" data-scroll-target="#working-with-st_geometry"><strong>1.5.1 Working with <em>st_geometry()</em></strong></a></li>
+  <li><a href="#working-with-glimpse" id="toc-working-with-glimpse" class="nav-link" data-scroll-target="#working-with-glimpse"><strong>1.5.2 Working with glimpse()</strong></a></li>
+  <li><a href="#working-with-head" id="toc-working-with-head" class="nav-link" data-scroll-target="#working-with-head"><strong>1.5.3 Working with <em>head()</em></strong></a></li>
+  </ul></li>
+  <li><a href="#plotting-the-geospatial-data" id="toc-plotting-the-geospatial-data" class="nav-link" data-scroll-target="#plotting-the-geospatial-data"><strong>1.6 Plotting the Geospatial Data</strong></a></li>
   </ul>
 </nav>
     </div>
@@ -197,8 +291,8 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="learning-outcome" class="level2">
 <h2 class="anchored" data-anchor-id="learning-outcome">1.1 Learning Outcome</h2>
-<p>Geospatial Data Science is a process of importing, wrangling, integrating, and processing geographically referenced data sets. In this hands-on exercise, you will learn how to perform geospatial data science tasks in R by using <strong>sf</strong> package.</p>
-<p>By the end of this hands-on exercise, you should acquire the following competencies:</p>
+<p>Geospatial Data Science is a process of importing, wrangling, integrating, and processing geographically referenced data sets. In this In-Class exercise, you will learn how to perform geospatial data science tasks in R by using <strong>sf</strong> package.</p>
+<p>By the end of this In-Class exercise, you should acquire the following competencies:</p>
 <ul>
 <li><p>installing and loading <a href="https://r-spatial.github.io/sf/">sf</a> and <a href="https://www.tidyverse.org/">tidyverse</a> packages into R environment,</p></li>
 <li><p>importing geospatial data by using appropriate functions of <strong>sf</strong> package,</p></li>
@@ -213,10 +307,161 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="data-acquisition" class="level2">
 <h2 class="anchored" data-anchor-id="data-acquisition">1.2 Data Acquisition</h2>
-<p>Data are key to data analytics including geospatial analytics. Hence, before analysing, we need to assemble the necessary data. In this hands-on exercise, you are required to extract the necessary data sets from the following sources:</p>
+<p>Data are key to data analytics including geospatial analytics. Hence, before analysing, we need to assemble the necessary data. In this In-Class exercise, you are required to extract the necessary data sets from the following sources:</p>
 <ul>
 <li>MPSZ on elearn</li>
 </ul>
+<section id="extracting-the-geospatial-data-sets" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-the-geospatial-data-sets"><strong>1.2.1 Extracting the geospatial data sets</strong></h3>
+<p>Next, at the <code>In-Class_Ex01</code> folder, create a sub-folder called <code>data</code>. Then, inside the <code>data</code> sub-folder, create two sub-folders and name them <code>geospatial</code> and <code>aspatial</code> respectively.</p>
+<p>Place <code>Master Plan 2014 Subzone Boundary (Web)</code>, <code>Pre-Schools Location</code> and <code>Cycling Path</code> zipped files into <code>geospatial</code> sub-folder and unzipped them. Copy the unzipped files from their respective sub-folders and place them inside <code>geospatial</code> sub-folder.</p>
+</section>
+<section id="extracting-the-aspatial-data-set" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-the-aspatial-data-set"><strong>1.2.2 Extracting the aspatial data set</strong></h3>
+<p>Now, you will extract the downloaded <code>listing</code> data file. At <code>Downloads</code> folder, cut and paste <code>listing.csv</code> into <code>aspatial</code> sub-folder.</p>
+</section>
+</section>
+<section id="getting-started" class="level2">
+<h2 class="anchored" data-anchor-id="getting-started"><strong>1.3 Getting Started</strong></h2>
+<p>Two R packages will be used. They are:</p>
+<ul>
+<li><p><strong>sf</strong> for importing, managing, and processing geospatial data, and</p></li>
+<li><p><strong>tidyverse</strong> for performing data science tasks such as importing, wrangling and visualising data.</p></li>
+</ul>
+<p>Tidyverse consists of a family of R packages. The following packages will be used:</p>
+<ul>
+<li><p><strong>readr</strong> for importing csv data,</p></li>
+<li><p><strong>readxl</strong> for importing Excel worksheet,</p></li>
+<li><p><strong>tidyr</strong> for manipulating data,</p></li>
+<li><p><strong>dplyr</strong> for transforming data, and</p></li>
+<li><p><strong>ggplot2</strong> for visualising data</p></li>
+</ul>
+<p>Type the following code chunk.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>The <a href="https://cran.r-project.org/web/packages/pacman/pacman.pdf"><code>p_load</code></a> function pf <a href="https://github.com/trinker/pacman"><strong>pacman</strong></a> package is used to install and load sf and tidyverse pacages into R environment.</li>
+</ul>
+</section>
+<section id="importing-geospatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="importing-geospatial-data"><strong>1.4 Importing Geospatial Data</strong></h2>
+<p>We will import the following geospatial data into R by using <a href="https://r-spatial.github.io/sf/reference/st_read.html"><em>st_read()</em></a> of <strong>sf</strong> package:</p>
+<pre><code>-   `MP14_SUBZONE_WEB_PL`, a polygon feature layer in ESRI shapefile format,
+
+-   `CyclingPath`, a line feature layer in ESRI shapefile format, and
+
+-   `PreSchool`, a point feature layer in kml file format.</code></pre>
+<section id="importing-polygon-feature-data-in-shapefile-format" class="level3">
+<h3 class="anchored" data-anchor-id="importing-polygon-feature-data-in-shapefile-format"><strong>1.4.1 Importing polygon feature data in shapefile format</strong></h3>
+<p>The code chunk below uses <em>st_read()</em> function of <strong>sf</strong> package to import <code>MP14_SUBZONE_WEB_PL</code> shapefile into R as a polygon feature data frame. Note that when the input geospatial data is in shapefile format, two arguments will be used, namely: <code>dsn</code> to define the data path and <code>layer</code> to provide the shapefile name. Also note that no extension such as .shp, .dbf, .prj and .shx are needed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">=</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"C:/IS415-GAA/In-Class_Ex/In-Class_Ex01/data"</span>, </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">layer =</span> <span class="st">"MPSZ-2019"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `MPSZ-2019' from data source 
+  `C:\IS415-GAA\In-Class_Ex\In-Class_Ex01\data' using driver `ESRI Shapefile'
+Simple feature collection with 332 features and 6 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<p>There are a total of 332 multipolygon features and 6 fields in mpsz simple feature data frame. mpsz is in WGS84 projected coordinates systems.</p>
+</section>
+</section>
+<section id="checking-the-content-of-a-simple-feature-data-frame" class="level2">
+<h2 class="anchored" data-anchor-id="checking-the-content-of-a-simple-feature-data-frame"><strong>1.5 Checking the Content of A Simple Feature Data Frame</strong></h2>
+<p>In this sub-section, you will use different ways to retrieve information related to the content of a simple feature data frame.</p>
+<section id="working-with-st_geometry" class="level3">
+<h3 class="anchored" data-anchor-id="working-with-st_geometry"><strong>1.5.1 Working with <em>st_geometry()</em></strong></h3>
+<p>The column in the sf data.frame that contains the geometries is a list, of class <code>sfc</code>. We can retrieve the geometry list-column in this case by mpsz$geom or mpsz[[1]], but the more general way uses <em>st_geometry()</em> as shown in the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_geometry</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Geometry set for 332 features 
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775
+Geodetic CRS:  WGS 84
+First 5 geometries:</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((103.8802 1.283859, 103.8802 1.2...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((103.8376 1.295599, 103.8377 1.2...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((103.8341 1.292476, 103.8341 1.2...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((103.7125 1.291625, 103.7126 1.2...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>MULTIPOLYGON (((103.8472 1.297, 103.8473 1.2969...</code></pre>
+</div>
+</div>
+</section>
+<section id="working-with-glimpse" class="level3">
+<h3 class="anchored" data-anchor-id="working-with-glimpse"><strong>1.5.2 Working with glimpse()</strong></h3>
+<p>Beside the basic feature information, we also would like to learn more about the associated attribute information in the data frame. This is the time you will find <em>glimpse()</em> of <strong>dplyr</strong>. very handy as shown in the code chunk below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 332
+Columns: 7
+$ SUBZONE_N  &lt;chr&gt; "MARINA EAST", "INSTITUTION HILL", "ROBERTSON QUAY", "JURON…
+$ SUBZONE_C  &lt;chr&gt; "MESZ01", "RVSZ05", "SRSZ01", "WISZ01", "MUSZ02", "MPSZ05",…
+$ PLN_AREA_N &lt;chr&gt; "MARINA EAST", "RIVER VALLEY", "SINGAPORE RIVER", "WESTERN …
+$ PLN_AREA_C &lt;chr&gt; "ME", "RV", "SR", "WI", "MU", "MP", "WI", "WI", "SI", "SI",…
+$ REGION_N   &lt;chr&gt; "CENTRAL REGION", "CENTRAL REGION", "CENTRAL REGION", "WEST…
+$ REGION_C   &lt;chr&gt; "CR", "CR", "CR", "WR", "CR", "CR", "WR", "WR", "CR", "CR",…
+$ geometry   &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((103.8802 1...., MULTIPOLYGON (…</code></pre>
+</div>
+</div>
+</section>
+<section id="working-with-head" class="level3">
+<h3 class="anchored" data-anchor-id="working-with-head"><strong>1.5.3 Working with <em>head()</em></strong></h3>
+<p>Sometimes we would like to reveal complete information of a feature object, this is the job of <a href="https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/head"><em>head()</em></a> of Base R. In this case we will look at the first 5 rows of mpsz</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mpsz, <span class="at">n=</span><span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 5 features and 6 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 103.6537 ymin: 1.216215 xmax: 103.8811 ymax: 1.29742
+Geodetic CRS:  WGS 84
+                SUBZONE_N SUBZONE_C      PLN_AREA_N PLN_AREA_C       REGION_N
+1             MARINA EAST    MESZ01     MARINA EAST         ME CENTRAL REGION
+2        INSTITUTION HILL    RVSZ05    RIVER VALLEY         RV CENTRAL REGION
+3          ROBERTSON QUAY    SRSZ01 SINGAPORE RIVER         SR CENTRAL REGION
+4 JURONG ISLAND AND BUKOM    WISZ01 WESTERN ISLANDS         WI    WEST REGION
+5            FORT CANNING    MUSZ02          MUSEUM         MU CENTRAL REGION
+  REGION_C                       geometry
+1       CR MULTIPOLYGON (((103.8802 1....
+2       CR MULTIPOLYGON (((103.8376 1....
+3       CR MULTIPOLYGON (((103.8341 1....
+4       WR MULTIPOLYGON (((103.7125 1....
+5       CR MULTIPOLYGON (((103.8472 1....</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="plotting-the-geospatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-the-geospatial-data"><strong>1.6 Plotting the Geospatial Data</strong></h2>
+<p>In geospatial data science, by looking at the feature information is not enough. We are also interested to visualise the geospatial features.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="In-Class_Ex01_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
 </section>

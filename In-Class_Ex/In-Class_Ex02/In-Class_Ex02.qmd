@@ -1,0 +1,35 @@
+---
+title: "In-Class Exercise 2: Thematic Mapping and GeoVisualisation with R"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-08-26
+---
+
+### **2.1 Importing Geospatial Data into R**
+
+The code chunk below will be used to install and load these packages in RStudio.
+
+::: {style="font-size: 1.50em"}
+```{r}
+pacman::p_load(sf, tidyverse)
+```
+:::
+
+```{r}
+#| echo: false
+pacman::p_load(sf, tidyverse, ggstatsplot, tmap)
+```
+
+The code chunk below uses the *st_read()* function of **sf** package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a simple feature data frame called `mpsz14_shp`.
+
+```{r}
+mpsz14_shp <- st_read(dsn = "data",
+                layer = "MP14_SUBZONE_WEB_PL")
+```
+
+The code chunk imports kml file.
+
+```{r}
+#| eval: false
+mpsz14_kml <- st_read("data/MasterPlan2014SubzoneBoundaryWebKML.kml")
+```

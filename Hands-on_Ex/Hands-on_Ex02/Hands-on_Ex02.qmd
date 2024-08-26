@@ -4,9 +4,16 @@ title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-08-23
 date-modified: "last-modified"
+format: html
+html:
+  toc: true
+  toc-depth: 3
+  number-sections: true
+  number-depth: 3
 execute: 
   eval: true
   echo: true
+  warning: true
   freeze: true
 ---
 
@@ -301,6 +308,7 @@ tm_shape(mpsz_pop2020)+
           style = "kmeans") +
   tm_borders(alpha = 0.5)
 ```
+
 In the code chunk below, *hclust* data classification method is used with 10 classes used.
 
 ```{r}
@@ -310,6 +318,7 @@ tm_shape(mpsz_pop2020)+
           style = "hclust") +
   tm_borders(alpha = 0.5)
 ```
+
 Lastly, in the code chunk below, *jenks* data classification method is used with only 2 classes used.
 
 ```{r}

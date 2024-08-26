@@ -3,9 +3,33 @@ title: "In-Class Exercise 2: Thematic Mapping and GeoVisualisation with R"
 title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-08-26
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+execute: 
+  eval: true
+  echo: true
+  warning: true
+  freeze: true
 ---
 
-### **2.1 Importing Geospatial Data into R**
+## *2 Working with Master Plan Planning Sub-Zone Data*
+
+::: panel-tabset
+### The Task
+
+1.  Visit data.gov.sg and download Master Plan 2019 Subzone Boundary (No Sea) from the portal. You are required to download both kml files.
+
+2.  Move MPSZ-2019 shapefile provided for In-Class Exercise 1 folder on elearn to data sub-folder of In-Class_Ex02.
+
+3.  Write a code chunk to import Master Plan 2019 Subzone Boundary (No Sea) kml and MPSZ-2019 into sf simple feature data.frame.
+
+### To import shapefile
+
 
 The code chunk below will be used to install and load these packages in RStudio.
 
@@ -23,6 +47,42 @@ pacman::p_load(sf, tidyverse, ggstatsplot, tmap)
 The code chunk below uses the *st_read()* function of **sf** package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a simple feature data frame called `mpsz14_shp`.
 
 ```{r}
+mpsz19_shp <- st_read(dsn = "data",
+                layer = "MPSZ-2019")
+```
+
+
+### To import kml
+
+The code chunk below will be used to install and load these packages in RStudio.
+
+::: {style="font-size: 1.50em"}
+```{r}
+pacman::p_load(sf, tidyverse)
+```
+:::
+
+```{r}
+#| echo: false
+pacman::p_load(sf, tidyverse, ggstatsplot, tmap)
+```
+
+The code chunk imports kml file.
+::: {style="font-size: 1.50em"}
+```{r}
+#| echo: false
+mpsz19_kml <- st_write(mpsz19_shp, 
+                       "data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml",
+                       delete_dsn = TRUE)
+```
+:::
+
+Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists.
+:::
+
+The code chunk below uses the *st_read()* function of **sf** package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a simple feature data frame called `mpsz14_shp`.
+
+```{r}
 mpsz14_shp <- st_read(dsn = "data",
                 layer = "MP14_SUBZONE_WEB_PL")
 ```
@@ -33,3 +93,16 @@ The code chunk imports kml file.
 #| eval: false
 mpsz14_kml <- st_read("data/MasterPlan2014SubzoneBoundaryWebKML.kml")
 ```
+
+An error should be expected after running this code chunk as the source could be corrupt or not supported.
+
+::: {style="font-size: 1.50em"}
+```{r}
+#| echo: false
+mpsz14_kml <- st_write(mpsz14_shp, 
+                       "data/MP14_SUBZONE_WEB_PL.kml",
+                       delete_dsn = TRUE)
+```
+:::
+
+Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists.

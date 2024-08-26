@@ -137,6 +137,34 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html">
  <span class="dropdown-text">Hands-on Exercsise 2</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html">
+ <span class="dropdown-text">Hands-on Exercsise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html">
+ <span class="dropdown-text">Hands-on Exercsise 4</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html">
+ <span class="dropdown-text">Hands-on Exercsise 5</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html">
+ <span class="dropdown-text">Hands-on Exercsise 6</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex07/Hands-on_Ex07.html">
+ <span class="dropdown-text">Hands-on Exercsise 7</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex09/Hands-on_Ex09.html">
+ <span class="dropdown-text">Hands-on Exercsise 9</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex10/Hands-on_Ex10.html">
+ <span class="dropdown-text">Hands-on Exercsise 10</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -247,6 +275,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div>
     </div>
     
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">August 26, 2024</p>
+      </div>
+    </div>
       
     </div>
     
@@ -259,7 +293,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#importing-geospatial-data-into-r" id="toc-importing-geospatial-data-into-r" class="nav-link active" data-scroll-target="#importing-geospatial-data-into-r"><strong>2.1 Importing Geospatial Data into R</strong></a></li>
+  <li><a href="#working-with-master-plan-planning-sub-zone-data" id="toc-working-with-master-plan-planning-sub-zone-data" class="nav-link active" data-scroll-target="#working-with-master-plan-planning-sub-zone-data"><span class="header-section-number">1</span> <em>2 Working with Master Plan Planning Sub-Zone Data</em></a></li>
   </ul>
 </nav>
     </div>
@@ -270,18 +304,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="importing-geospatial-data-into-r" class="level3">
-<h3 class="anchored" data-anchor-id="importing-geospatial-data-into-r"><strong>2.1 Importing Geospatial Data into R</strong></h3>
+<section id="working-with-master-plan-planning-sub-zone-data" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="working-with-master-plan-planning-sub-zone-data"><span class="header-section-number">1</span> <em>2 Working with Master Plan Planning Sub-Zone Data</em></h2>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">The Task</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">To import shapefile</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" role="tab" aria-controls="tabset-1-3" aria-selected="false">To import kml</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<ol type="1">
+<li><p>Visit data.gov.sg and download Master Plan 2019 Subzone Boundary (No Sea) from the portal. You are required to download both kml files.</p></li>
+<li><p>Move MPSZ-2019 shapefile provided for In-Class Exercise 1 folder on elearn to data sub-folder of In-Class_Ex02.</p></li>
+<li><p>Write a code chunk to import Master Plan 2019 Subzone Boundary (No Sea) kml and MPSZ-2019 into sf simple feature data.frame.</p></li>
+</ol>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
 <p>The code chunk below will be used to install and load these packages in RStudio.</p>
 <div style="font-size: 1.50em">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>The code chunk below uses the <em>st_read()</em> function of <strong>sf</strong> package to import <code>MP14_SUBZONE_WEB_PL</code> shapefile into R as a simple feature data frame called <code>mpsz</code>.</p>
+<p>The code chunk below uses the <em>st_read()</em> function of <strong>sf</strong> package to import <code>MP14_SUBZONE_WEB_PL</code> shapefile into R as a simple feature data frame called <code>mpsz14_shp</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data"</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mpsz19_shp <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data"</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MPSZ-2019"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `MPSZ-2019' from data source 
+  `C:\myhan\IS415-GAA\In-Class_Ex\In-Class_Ex02\data' using driver `ESRI Shapefile'
+Simple feature collection with 332 features and 6 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775
+Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+</div>
+<div id="tabset-1-3" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-3-tab">
+<p>The code chunk below will be used to install and load these packages in RStudio.</p>
+<div style="font-size: 1.50em">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p>The code chunk imports kml file. ::: {style=“font-size: 1.50em”}</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Deleting source `data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml' using driver `KML'
+Writing layer `MasterPlan2019SubzoneBoundaryNoSeaKML' to data source 
+  `data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml' using driver `KML'
+Writing 332 features with 6 fields and geometry type Multi Polygon.</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists. :::</p>
+<p>The code chunk below uses the <em>st_read()</em> function of <strong>sf</strong> package to import <code>MP14_SUBZONE_WEB_PL</code> shapefile into R as a simple feature data frame called <code>mpsz14_shp</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mpsz14_shp <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data"</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `MP14_SUBZONE_WEB_PL' from data source 
   `C:\myhan\IS415-GAA\In-Class_Ex\In-Class_Ex02\data' using driver `ESRI Shapefile'
@@ -292,6 +372,22 @@ Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
 Projected CRS: SVY21</code></pre>
 </div>
 </div>
+<p>The code chunk imports kml file.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mpsz14_kml <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"data/MasterPlan2014SubzoneBoundaryWebKML.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>An error should be expected after running this code chunk as the source could be corrupt or not supported.</p>
+<div style="font-size: 1.50em">
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Deleting source `data/MP14_SUBZONE_WEB_PL.kml' using driver `KML'
+Writing layer `MP14_SUBZONE_WEB_PL' to data source 
+  `data/MP14_SUBZONE_WEB_PL.kml' using driver `KML'
+Writing 323 features with 15 fields and geometry type Multi Polygon.</code></pre>
+</div>
+</div>
+</div>
+<p>Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists.</p>
 
 
 </section>

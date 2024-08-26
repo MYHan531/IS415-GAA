@@ -17,7 +17,7 @@ execute:
   freeze: true
 ---
 
-## *2 Working with Master Plan Planning Sub-Zone Data*
+## *Working with Master Plan Planning Sub-Zone Data*
 
 ::: panel-tabset
 ### The Task
@@ -48,7 +48,8 @@ The code chunk below uses the *st_read()* function of **sf** package to import `
 
 ```{r}
 mpsz19_shp <- st_read(dsn = "data",
-                layer = "MPSZ-2019")
+                layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
 ```
 
 
@@ -77,32 +78,72 @@ mpsz19_kml <- st_write(mpsz19_shp,
 ```
 :::
 
-Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists.
-:::
-
-The code chunk below uses the *st_read()* function of **sf** package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a simple feature data frame called `mpsz14_shp`.
-
+### **Import Pre-School Shape**
+::: panel-tabset
+### Pre-School Shape
 ```{r}
-mpsz14_shp <- st_read(dsn = "data",
-                layer = "MP14_SUBZONE_WEB_PL")
-```
-
-The code chunk imports kml file.
-
-```{r}
-#| eval: false
-mpsz14_kml <- st_read("data/MasterPlan2014SubzoneBoundaryWebKML.kml")
-```
-
-An error should be expected after running this code chunk as the source could be corrupt or not supported.
-
-::: {style="font-size: 1.50em"}
-```{r}
-#| echo: false
-mpsz14_kml <- st_write(mpsz14_shp, 
-                       "data/MP14_SUBZONE_WEB_PL.kml",
-                       delete_dsn = TRUE)
+preschool <- st_write(mpsz19_shp, 
+                       "data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml",
+                       delete_dsn = TRUE) #incomplete
 ```
 :::
 
-Note that we use delete_dsn = TRUE, without the code if the file already exists, the code chunk will give an error stating: ERROR: Dataset already exists.
+
+### **Working with Population Data**
+::: panel-tabset
+### The Code
+```{r}
+popdata <- readr::read_csv("data/aspatial/respopagesextod2023.csv")
+```
+:::
+
+::: panel-tabset
+### Data Wrangling
+
+```{r}
+popdata2023 <- popdata |>
+  dplyr::group_by(PA, SZ, AG) |>
+  dplyr::summarise(`POP`=sum(`Pop`)) |>
+  dplyr::ungroup() |>
+  tidyr::pivot_wider(names_from = AG,
+              values_from = POP
+              )
+colnames(popdata2023)
+```
+:::
+
+::: panel-tabset
+### Data Processing
+
+```{r}
+popdata2023 <- popdata2023 %>%
+  mutate(YOUNG = rowSums(.[3:6])
+         +rowSums(.[14])) %>%
+mutate(`ECONOMY ACTIVE` = rowSums(.[7:13])+
+rowSums(.[15]))%>%
+mutate(`AGED`=rowSums(.[16:21])) %>%
+mutate(`TOTAL`=rowSums(.[3:21])) %>%  
+mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
+/`ECONOMY ACTIVE`) %>%
+  select(`PA`, `SZ`, `YOUNG`, 
+       `ECONOMY ACTIVE`, `AGED`, 
+       `TOTAL`, `DEPENDENCY`)
+```
+
+### Mutate the code
+```{r}
+popdata2023 <- popdata2023 %>%
+  mutate_at(.vars = vars(PA, SZ), 
+          .funs = list(toupper)) %>%
+  filter(`ECONOMY ACTIVE` > 0)
+
+```
+
+### LEFT_JOIN
+```{r}
+mpsz_pop2023 <- left_join(popdata2023 ,mpsz19_shp,
+                          by = c("SZ"="SUBZONE_N"))
+
+write_rds(mpsz_pop2023, "data/rds/mpszpop2023.rds")
+```
+:::

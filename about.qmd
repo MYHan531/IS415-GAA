@@ -1,9 +1,43 @@
 ---
 title: "About"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-08-31
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
 ---
 
-About this site
+## About Me
 
-```{r}
-1 + 1
-```
+### Introduction
+
+I am a final-year university student currently studying at Singapore Management University, aspiring to be a geospatial data analyst with a passion for exploring the complex relationships between location-based data and real-world applications.
+
+### Professional Background
+
+With a solid foundation in R programming language, my work involves using tools like R, particularly in conjunction with tidyverse, `sf`, `tmap`, and other spatial packages, to perform detailed spatial analyses and create visually compelling maps.
+
+### Research Interests
+
+My research interests span across multiple domains of geospatial analysis, including spatial data visualization, spatial econometrics, and the application of GIS in urban planning and environmental monitoring. I am particularly interested in using geospatial techniques to address challenges related to urbanisation, environmental sustainability, and public health.
+
+### Technical Skills
+
+-   **Geospatial Tools:** Learning R for geospatial analysis, particularly using packages like `tidyverse`, `sf`, `tmap`, and `raster`.
+
+-   **Programming Languages:** Strong command of R, with working knowledge of Python and SQL for geospatial data processing.
+
+### Current Projects
+
+### Future Goals
+
+As I continue to grow in the field of geospatial analysis, I aim to further refine my skills in spatial econometrics and expand my knowledge of machine learning applications in geospatial contexts. My long-term goal is to contribute to the development of more efficient and sustainable spatial solutions that can have a meaningful impact on society.
+
+### Contact
+
+Feel free to connect with me through [LinkedIn](https://www.linkedin.com/in/han-ming-yan/?trk=public-profile-join-page) or [GitHub](https://github.com/MYHan531) to discuss geospatial analysis, collaborative projects, or any other related topics.

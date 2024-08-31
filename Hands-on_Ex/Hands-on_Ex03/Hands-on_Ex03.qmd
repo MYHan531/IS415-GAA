@@ -22,7 +22,7 @@ Spatial Point Pattern Analysis is the evaluation of the pattern or distribution,
 
 Using appropriate functions of [spatstat](https://cran.r-project.org/web/packages/spatstat/), this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.
 
-### 3.1.1 The specific questions we would like to answer are as follows:
+## 3.1 The specific questions we would like to answer are as follows:
 
 -   are the childcare centres in Singapore randomly distributed throughout the country?
 

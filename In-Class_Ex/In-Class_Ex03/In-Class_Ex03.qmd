@@ -1,5 +1,5 @@
 ---
-title: "In-Class Exercise 3: 1st Order Spatial Point Patterns Analysis Methods"
+title: "In-Class Exercise 3: Geospatial analytics for Social Good - Myanmar Arm Conflict Case Study"
 title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-09-02
@@ -8,37 +8,33 @@ format:
   html:
     toc: true
     toc-depth: 3
+    toc-location: right
     number-sections: true
     number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+abstract: |
+  This exercise focuses on methods for analysing 1st and 2nd Order Spatial Point Patterns. We will cover techniques and tools necessary for conducting this analysis, with practical examples.
+keywords: ["Spatial Analysis", "Point Patterns", "First-Order Analysis", "Second-Order Analysis", "Monte Carlo simulation", "Myanmar", "Myanmar Civil War Crisis"]
 ---
 
-## **3 Overview**
+# **Overview**
 
-Spatial Point Pattern Analysis is the evaluation of the pattern or distribution, of a set of points on a surface. The point can be location of:
+This exercise focuses on applying geospatial analytics to explore and analyze the impact of the armed conflict in Myanmar. The aim is to use spatial data and analytical techniques to better understand the conflict's dynamics, identify affected regions, and assess the humanitarian implications. This case study offers a real-world application of geospatial tools for social good, demonstrating how data-driven insights can inform decision-making in crisis situations.
 
--   events such as crime, traffic accident and disease onset, or
+## **Data used**
 
--   business services (coffee and fastfood outlets) or facilities such as childcare and eldercare.
+To provide answers to the questions above, the data set that will be used is:
 
-Using appropriate functions of [spatstat](https://cran.r-project.org/web/packages/spatstat/), this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.
+-   ACLED_Myanmar.csv in the data folder
 
-## 3.1 The specific questions we would like to answer are as follows:
+Tools used:
 
--   are the childcare centres in Singapore randomly distributed throughout the country?
+-   [**acledata**](https://acleddata.com/data-export-tool/) **requires Access Key, Given out later**
 
--   if the answer is not, then the next logical question is where are the locations with higher concentration of childcare centres?
-
-## **3.2 The data**
-
-To provide answers to the questions above, three data sets will be used. They are:
-
--   `CHILDCARE`, a point feature data providing both location and attribute information of childcare centres. It was downloaded from Data.gov.sg and is in geojson format.
-
--   `MP14_SUBZONE_WEB_PL`, a polygon feature data providing information of URA 2014 Master Plan Planning Subzone boundary data. It is in ESRI shapefile format. This data set was also downloaded from Data.gov.sg.
-
--   `CostalOutline`, a polygon feature data showing the national boundary of Singapore. It is provided by SLA and is in ESRI shapefile format.
-
-## **3.3 Installing and Loading the R packages**
+## **Installing and Loading the R packages**
 
 In this hands-on exercise, five R packages will be used, they are:
 
@@ -48,16 +44,41 @@ In this hands-on exercise, five R packages will be used, they are:
 
 -   [**raster**](https://cran.r-project.org/web/packages/raster/) which reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster). In this hands-on exercise, it will be used to convert image output generate by spatstat into raster format.
 
--   [**maptools**](https://cran.r-project.org/web/packages/maptools/index.html) which provides a set of tools for manipulating geographic data. In this hands-on exercise, we mainly use it to convert *Spatial* objects into *ppp* format of **spatstat**.
+-   [**maptools**](https://cran.r-project.org/web/packages/maptools/index.html) which provides a set of tools for manipulating geographic data. In this hands-on exercise, we mainly use it to convert *Spatial* objects into *ppp* format of **spatstat**. (Deprecated as of October 2023)
 
 -   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
 
 Use the code chunk below to install and launch the five R packages.
 
+# Issue 1: Installing maptools
+
+**maptools** is retired as of October 2023 and binary is removed from CRAN. However, we can still download from [**Posit Public Package Manager**](https://packagemanager.posit.co/client/) snapshots by using the code chunk specified
+
 ```{r}
+#|eval: false # it will no longer run anymore after first run
+#|warning: false
 install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
 ```
 
 ```{r}
 pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
+```
+
+# Import Data File 
+
+Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
+
+```{r}
+acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
+  st_as_sf(coords = c( "longitude","latitude"),
+           crs = 4326) %>%
+  st_transform(crs = 32647) %>%
+    mutate(event_date = dmy(event_date))
+  
+```
+
+Set tmap to view('view')
+
+```{r}
+tmap_mode('view')
 ```

@@ -30,7 +30,6 @@ execute:
 
 ### To import shapefile
 
-
 The code chunk below will be used to install and load these packages in RStudio.
 
 ::: {style="font-size: 1.50em"}
@@ -52,7 +51,6 @@ mpsz19_shp <- st_read(dsn = "data",
   st_transform(crs = 3414)
 ```
 
-
 ### To import kml
 
 The code chunk below will be used to install and load these packages in RStudio.
@@ -68,8 +66,8 @@ pacman::p_load(sf, tidyverse)
 pacman::p_load(sf, tidyverse, ggstatsplot, tmap)
 ```
 
-The code chunk imports kml file.
-::: {style="font-size: 1.50em"}
+The code chunk imports kml file. ::: {style="font-size: 1.50em"}
+
 ```{r}
 #| echo: false
 mpsz19_kml <- st_write(mpsz19_shp, 
@@ -79,8 +77,10 @@ mpsz19_kml <- st_write(mpsz19_shp,
 :::
 
 ### **Import Pre-School Shape**
+
 ::: panel-tabset
 ### Pre-School Shape
+
 ```{r}
 preschool <- st_write(mpsz19_shp, 
                        "data/MasterPlan2019SubzoneBoundaryNoSeaKML.kml",
@@ -88,10 +88,11 @@ preschool <- st_write(mpsz19_shp,
 ```
 :::
 
-
 ### **Working with Population Data**
+
 ::: panel-tabset
 ### The Code
+
 ```{r}
 popdata <- readr::read_csv("data/aspatial/respopagesextod2023.csv")
 ```
@@ -131,6 +132,7 @@ mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
 ```
 
 ### Mutate the code
+
 ```{r}
 popdata2023 <- popdata2023 %>%
   mutate_at(.vars = vars(PA, SZ), 
@@ -140,6 +142,7 @@ popdata2023 <- popdata2023 %>%
 ```
 
 ### LEFT_JOIN
+
 ```{r}
 mpsz_pop2023 <- left_join(popdata2023 ,mpsz19_shp,
                           by = c("SZ"="SUBZONE_N"))

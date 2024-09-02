@@ -1,5 +1,5 @@
 ---
-title: "Hands-On Exercise 3: 1st Order Spatial Point Patterns Analysis Methods"
+title: "Hands-On Exercise 3: 1st & 2nd Order Spatial Point Patterns Analysis Methods"
 title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-08-27
@@ -55,6 +55,7 @@ In this hands-on exercise, five R packages will be used, they are:
 Use the code chunk below to install and launch the five R packages.
 
 ```{r}
+#|eval: false # it will no longer run anymore after first run
 install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
 ```
 
@@ -466,12 +467,14 @@ plot(kde_childcareSG_adaptive, main = "Adaptive bandwidth")
 
 ### **3.7.3 Converting KDE output into grid object.**
 
-The result is the same, we just convert it so that it is suitable for mapping purposes
+The result is the same, we just convert it so that it is suitable for mapping purposes.
 
 ```{r}
 gridded_kde_childcareSG_bw <- as.SpatialGridDataFrame.im(kde_childcareSG.bw)
 spplot(gridded_kde_childcareSG_bw)
 ```
+
+**Note: as.SpatialGridDataFrame.im requires package "maptools" to use.**
 
 #### 3.7.3.1 Converting gridded output into raster
 

@@ -1,0 +1,84 @@
+---
+title: "Take-Home Exercise 1: Geospatial analytics for Social Good - Myanmar Arm Conflict Case Study"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-02
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+abstract: |
+  This exercise focuses on methods for analysing 1st and 2nd Order Spatial Point Patterns. We will cover techniques and tools necessary for conducting this analysis, with practical examples.
+keywords: ["Spatial Analysis", "Point Patterns", "First-Order Analysis", "Second-Order Analysis", "Monte Carlo simulation", "Myanmar", "Myanmar Civil War Crisis"]
+---
+
+# **Overview**
+
+This exercise focuses on applying geospatial analytics to explore and analyze the impact of the armed conflict in Myanmar. The aim is to use spatial data and analytical techniques to better understand the conflict's dynamics, identify affected regions, and assess the humanitarian implications. This case study offers a real-world application of geospatial tools for social good, demonstrating how data-driven insights can inform decision-making in crisis situations.
+
+## **Data used**
+
+To provide answers to the questions above, the data set that will be used is:
+
+-   ACLED_Myanmar.csv in the data folder
+
+Tools used:
+
+-   [**acledata**](https://acleddata.com/data-export-tool/) **requires Access Key, Given out later**
+
+## **Installing and Loading the R packages**
+
+In this hands-on exercise, five R packages will be used, they are:
+
+-   [**sf**](https://r-spatial.github.io/sf/), a relatively new R package specially designed to import, manage and process vector-based geospatial data in R.
+
+-   [**spatstat**](https://spatstat.org/), which has a wide range of useful functions for point pattern analysis. In this hands-on exercise, it will be used to perform 1st- and 2nd-order spatial point patterns analysis and derive kernel density estimation (KDE) layer.
+
+-   [**raster**](https://cran.r-project.org/web/packages/raster/) which reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster). In this hands-on exercise, it will be used to convert image output generate by spatstat into raster format.
+
+-   [**maptools**](https://cran.r-project.org/web/packages/maptools/index.html) which provides a set of tools for manipulating geographic data. In this hands-on exercise, we mainly use it to convert *Spatial* objects into *ppp* format of **spatstat**. (Deprecated as of October 2023)
+
+-   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
+
+Use the code chunk below to install and launch the five R packages.
+
+# Issue 1: Installing maptools
+
+**maptools** is retired as of October 2023 and binary is removed from CRAN. However, we can still download from [**Posit Public Package Manager**](https://packagemanager.posit.co/client/) snapshots by using the code chunk specified
+
+```{r}
+#|eval: false # it will no longer run anymore after first run
+#|warning: false
+install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
+```
+
+Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
+
+```{r}
+acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
+  st_as_sf(coords = c( "longitude","latitude"),
+           crs = 4326) %>%
+  st_transform(crs = 32647) %>%
+    mutate(event_date = dmy(event_date))
+```
+
+```{r}
+tmap_mode('view') # interactive view
+acled_sf %>% filter(year == 2023 |
+                      event_type == 'Political Violence') %>%
+  tm_shape() + 
+  tm_dots()
+tmap_mode('plot') # static view
+```

@@ -1,0 +1,63 @@
+---
+title: "In-Class Exercise 3: 1st Order Spatial Point Patterns Analysis Methods"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-02
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+---
+
+## **3 Overview**
+
+Spatial Point Pattern Analysis is the evaluation of the pattern or distribution, of a set of points on a surface. The point can be location of:
+
+-   events such as crime, traffic accident and disease onset, or
+
+-   business services (coffee and fastfood outlets) or facilities such as childcare and eldercare.
+
+Using appropriate functions of [spatstat](https://cran.r-project.org/web/packages/spatstat/), this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.
+
+## 3.1 The specific questions we would like to answer are as follows:
+
+-   are the childcare centres in Singapore randomly distributed throughout the country?
+
+-   if the answer is not, then the next logical question is where are the locations with higher concentration of childcare centres?
+
+## **3.2 The data**
+
+To provide answers to the questions above, three data sets will be used. They are:
+
+-   `CHILDCARE`, a point feature data providing both location and attribute information of childcare centres. It was downloaded from Data.gov.sg and is in geojson format.
+
+-   `MP14_SUBZONE_WEB_PL`, a polygon feature data providing information of URA 2014 Master Plan Planning Subzone boundary data. It is in ESRI shapefile format. This data set was also downloaded from Data.gov.sg.
+
+-   `CostalOutline`, a polygon feature data showing the national boundary of Singapore. It is provided by SLA and is in ESRI shapefile format.
+
+## **3.3 Installing and Loading the R packages**
+
+In this hands-on exercise, five R packages will be used, they are:
+
+-   [**sf**](https://r-spatial.github.io/sf/), a relatively new R package specially designed to import, manage and process vector-based geospatial data in R.
+
+-   [**spatstat**](https://spatstat.org/), which has a wide range of useful functions for point pattern analysis. In this hands-on exercise, it will be used to perform 1st- and 2nd-order spatial point patterns analysis and derive kernel density estimation (KDE) layer.
+
+-   [**raster**](https://cran.r-project.org/web/packages/raster/) which reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster). In this hands-on exercise, it will be used to convert image output generate by spatstat into raster format.
+
+-   [**maptools**](https://cran.r-project.org/web/packages/maptools/index.html) which provides a set of tools for manipulating geographic data. In this hands-on exercise, we mainly use it to convert *Spatial* objects into *ppp* format of **spatstat**.
+
+-   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
+
+Use the code chunk below to install and launch the five R packages.
+
+```{r}
+install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
+```

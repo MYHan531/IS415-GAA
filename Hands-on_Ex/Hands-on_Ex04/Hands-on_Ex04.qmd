@@ -1,0 +1,90 @@
+---
+title: "Hands-On Exercise 4: Network Constrained Spatial Point Patterns Analysis"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-05
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    number-depth: 3
+---
+
+## **Overview**
+
+**Network constrained Spatial Point Patterns Analysis (NetSPAA)** is a collection of spatial point patterns analysis methods special developed for analysing spatial point event occurs on or alongside network. The spatial point event can be locations of traffic accident or childcare centre for example. The network, on the other hand can be a road network or river network.
+
+In this hands-on exercise, you are going to gain hands-on experience on using appropriate functions of **spNetwork** package:
+
+-   to derive **network kernel density estimation (NKDE)**, and
+
+-   to perform network G-function and k-function analysis
+
+## **Data Used**
+
+In this study, we will analyse the spatial distribution of childcare centre in [Punggol planning area](https://en.wikipedia.org/wiki/Punggol). For the purpose of this study, two geospatial data sets will be used. They are:
+
+-   *Punggol_St*, a line features geospatial data which store the road network within Punggol Planning Area.
+
+-   *Punggol_CC*, a point feature geospatial data which store the location of childcare centres within Punggol Planning Area.
+
+Both data sets are in ESRI shapefile format.
+
+## **Installing and launching the R packages**
+
+In this hands-on exercise, four R packages will be used, they are:
+
+-   [spNetwork](https://cran.r-project.org/web/packages/spNetwork/index.html), which provides functions to perform Spatial Point Patterns Analysis such as kernel density estimation (KDE) and K-function on network. It also can be used to build spatial matrices (‘listw’ objects like in ‘spdep’ package) to conduct any kind of traditional spatial analysis with spatial weights based on reticular distances.
+
+-   [sf](https://r-spatial.github.io/sf/index.html) package provides functions to manage, processing, and manipulate **Simple Features**, a formal geospatial data standard that specifies a storage and access model of spatial geometries such as points, lines, and polygons.
+
+-   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
+
+Use the code chunk below to install and launch the four R packages.
+
+```{r}
+pacman::p_load(sf, spNetwork, tmap, tidyverse)
+```
+
+## **Data Import and Preparation**
+
+The code chunk below uses `st_read()` of **sf** package to important Punggol_St and Punggol_CC geospatial data sets into RStudio as sf data frames.
+
+```{r}
+network <- st_read(dsn="data/geospatial", 
+                   layer="Punggol_St")
+```
+
+```{r}
+childcare <- st_read(dsn="data/geospatial",
+                     layer="Punggol_CC")
+```
+
+We can examine the structure of the output simple features data tables in RStudio. Alternative, code chunk below can be used to print the content of network and childcare simple features objects by using the code chunk below.
+
+::: panel-tabset
+## Childcare
+
+```{r}
+childcare
+```
+
+## Network
+
+```{r}
+network
+```
+:::
+
+When exploring spNetwork’s functions, it came to my attention that spNetwork is expecting the geospatial data contains complete CRS information.
+
+## **Visualising the Geospatial Data**
+
+Before we jump into the analysis, it is a good practice to visualise the geospatial data. There are at least two ways to visualise the geospatial data. One way is by using *plot()* of Base R as shown in the code chunk below.
+
+```{r}
+plot(st_geometry(network))
+plot(childcare,add=T,col='red',pch = 19)
+```

@@ -57,9 +57,8 @@ The specific tasks of this take-home exercise are as follows:
 
 -   **Geospatial Data Wrangling (20 marks):** This is an important aspect of geospatial analytics. You will be assessed on your ability to employ appropriate R functions from various R packages specifically designed for modern data science such as readxl, tidyverse (tidyr, dplyr, ggplot2), sf just to mention a few of them, to perform the entire geospatial data wrangling processes, including. This is not limited to data import, data extraction, data cleaning and data transformation. Besides assessing your ability to use the R functions, this criterion also includes your ability to clean and derive appropriate variables to meet the analysis need.
 
-```{=html}
 <!-- -->
-```
+
 -   **Geospatial Analysis (30 marks):** In this exercise, you are expected to use the appropriate spatial point patterns analysis methods and R packages introduced in class to analysis the geospatial data prepared. You will be assessed on your ability to derive analytical products by using appropriate kernel estimation techniques.
 
 -   **Geovisualisation and geocommunication (20 marks):** In this section, you will be assessed on your ability to communicate Exploratory Spatial Data Analysis and Confirmatory Spatial Data Analysis results in layman friendly visual representations. This course is geospatial centric, hence, it is important for you to demonstrate your competency in using appropriate geovisualisation techniques to reveal and communicate the findings of your analysis.
@@ -76,6 +75,8 @@ In this hands-on exercise, five R packages will be used, they are:
 -   [**sf**](https://r-spatial.github.io/sf/), a relatively new R package specially designed to import, manage and process vector-based geospatial data in R.
 
 -   [**spatstat**](https://spatstat.org/), which has a wide range of useful functions for point pattern analysis. In this hands-on exercise, it will be used to perform 1st- and 2nd-order spatial point patterns analysis and derive kernel density estimation (KDE) layer.
+
+-   sparr provides functions to estimate fixed and adaptive kernel
 
 -   [**raster**](https://cran.r-project.org/web/packages/raster/) which reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster). In this hands-on exercise, it will be used to convert image output generate by spatstat into raster format.
 
@@ -96,7 +97,7 @@ install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-
 ```
 
 ```{r}
-pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
+pacman::p_load(tmap, sf, tidyverse, raster, spatstat, sp, sparr)
 ```
 
 Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
@@ -116,4 +117,131 @@ acled_sf %>% filter(year == 2023 |
   tm_shape() + 
   tm_dots()
 tmap_mode('plot') # static view
+```
+
+## **Converting ACLED_sf frame to sp’s Spatial\* class**
+
+```{r}
+acled_myanmar <- as_Spatial(acled_sf)
+```
+
+## Display
+
+```{r}
+acled_myanmar
+```
+
+### **Converting the generic sp format into spatstat’s ppp format**
+
+```{r}
+acled_myanmar_ppp <- as.ppp(acled_sf)
+acled_myanmar_ppp
+```
+
+```{r}
+plot(acled_myanmar_ppp)
+```
+
+```{r}
+summary(acled_myanmar_ppp)
+```
+
+```{r}
+any(duplicated(acled_myanmar_ppp))
+```
+
+```{r}
+sum(multiplicity(acled_myanmar_ppp) > 1)
+```
+
+# Second-order Spatial Point Patterns Analysis
+
+## Computing kernel density estimation using automatic bandwidth selection method
+
+```{r}
+kde_mynamar_bw <- density(acled_myanmar_ppp, sigma=bw.diggle, edge=TRUE,
+                          kernel="gaussian")
+plot(kde_mynamar_bw)
+```
+
+```{r}
+# bw is short form of Bandwidth
+bw <- bw.diggle(acled_myanmar_ppp)
+bw
+```
+
+#### Rescalling KDE values
+
+```{r}
+acled_myanmar_ppp.km <- rescale.ppp(acled_myanmar_ppp, 1000, "km")
+kde_mynamar_bw <- density(acled_myanmar_ppp, sigma=bw.diggle, edge=TRUE,
+                          kernel="gaussian")
+plot(kde_mynamar_bw)
+```
+
+### **Different Automatic Bandwidth Methods**
+
+```{r}
+bw.CvL(acled_myanmar_ppp.km)
+```
+
+```{r}
+bw.scott(acled_myanmar_ppp.km)
+```
+
+```{r}
+bw.ppl(acled_myanmar_ppp.km)
+```
+
+```{r}
+bw.diggle(acled_myanmar_ppp.km)
+```
+
+| Function  | Methodology                                | Advantages                                      | Limitations                                          |
+|-----------|--------------------------------------------|-------------------------------------------------|------------------------------------------------------|
+| bw.CvL    | Least Squares Cross-Validation             | Data-driven, adaptive                           | Computationally intensive, sensitive to outliers     |
+| bw.scott  | Scott’s Rule of Thumb                      | Simple, quick                                   | Assumes Gaussian distribution, non-adaptive          |
+| bw.ppl    | Penalized Profile Likelihood               | Balances fit and smoothness, flexible           | Complex, requires penalty parameter tuning           |
+| bw.diggle | Diggle’s Method (Edge-corrected, adaptive) | Tailored for spatial data, handles edge effects | More specific, potentially computationally demanding |
+
+-   **For Quick, General Estimates:** `bw.scott()` is suitable when you need a fast, rule-of-thumb bandwidth without deep customization.
+
+-   **For Data-Driven Precision:** `bw.CvL()` offers a more tailored bandwidth selection by minimizing prediction error but at a higher computational cost.
+
+-   **For Balancing Smoothness and Fit:** `bw.ppl()` is ideal when you want to control the trade-off between overfitting and oversmoothing.
+
+-   **For Spatially Inhomogeneous Data with Edge Concerns:** `bw.diggle()` is preferable when dealing with spatial point patterns that exhibit varying intensities and are subject to boundary effects.
+
+```{r}
+acled_myanmar.ppl <- density(acled_myanmar_ppp.km, 
+                               sigma=bw.ppl, 
+                               edge=TRUE,
+                               kernel="gaussian")
+par(mfrow=c(1,2))
+plot(acled_myanmar.bw, main = "bw.diggle")
+plot(acled_myanmar.ppl, main = "bw.ppl")
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(density(acled_myanmar_ppp.km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="gaussian"), 
+     main="Gaussian")
+plot(density(acled_myanmar_ppp.km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="epanechnikov"), 
+     main="Epanechnikov")
+plot(density(acled_myanmar_ppp.km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="quartic"), 
+     main="Quartic")
+plot(density(acled_myanmar_ppp.km, 
+             sigma=bw.ppl, 
+             edge=TRUE, 
+             kernel="disc"), 
+     main="Disc")
 ```

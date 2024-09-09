@@ -64,7 +64,7 @@ install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-
 pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
 ```
 
-# Import Data File 
+# Import Data File
 
 Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
 

@@ -16,7 +16,7 @@ format:
     lightbox: true
     lang: en
 abstract: |
-  This exercise focuses on methods for analysing 1st and 2nd Order Spatial Point Patterns. We will cover techniques and tools necessary for conducting this analysis, with practical examples.
+  In this study, you are tasked to apply spatial point patterns analysis methods to discover the spatial and spatio-temporal distribution of armed conflict in Myanmar.
 keywords: ["Spatial Analysis", "Point Patterns", "First-Order Analysis", "Second-Order Analysis", "Monte Carlo simulation", "Myanmar", "Myanmar Civil War Crisis"]
 ---
 
@@ -32,7 +32,42 @@ To provide answers to the questions above, the data set that will be used is:
 
 Tools used:
 
--   [**acledata**](https://acleddata.com/data-export-tool/) **requires Access Key, Given out later**
+-   [**acledata**](https://acleddata.com/data-export-tool/) **requires Access Key, Given**
+
+::: panel-tabset
+## The Task
+
+The specific tasks of this take-home exercise are as follows:
+
+-   Using appropriate function of **sf** and **tidyverse** packages, import and transform the downloaded armed conflict data and administrative boundary data into sf tibble data.frames.
+
+-   Using the geospatial data sets prepared, derive quarterly KDE layers.
+
+-   Using the geospatial data sets prepared, perform 2nd-Order Spatial Point Patterns Analysis.
+
+-   Using the geospatial data sets prepared, derive quarterly spatio-temporal KDE layers.
+
+-   Using the geospatial data sets prepared, perform 2nd-Order Spatio-temporal Point Patterns Analysis.
+
+-   Using appropriate **tmap** functions, display the KDE and Spatio-temporal KDE layers on openstreetmap of Myanmar.
+
+-   Describe the spatial patterns revealed by the KDE and Spatio-temporal KDE maps.
+
+## Grading Criteria
+
+-   **Geospatial Data Wrangling (20 marks):** This is an important aspect of geospatial analytics. You will be assessed on your ability to employ appropriate R functions from various R packages specifically designed for modern data science such as readxl, tidyverse (tidyr, dplyr, ggplot2), sf just to mention a few of them, to perform the entire geospatial data wrangling processes, including. This is not limited to data import, data extraction, data cleaning and data transformation. Besides assessing your ability to use the R functions, this criterion also includes your ability to clean and derive appropriate variables to meet the analysis need.
+
+```{=html}
+<!-- -->
+```
+-   **Geospatial Analysis (30 marks):** In this exercise, you are expected to use the appropriate spatial point patterns analysis methods and R packages introduced in class to analysis the geospatial data prepared. You will be assessed on your ability to derive analytical products by using appropriate kernel estimation techniques.
+
+-   **Geovisualisation and geocommunication (20 marks):** In this section, you will be assessed on your ability to communicate Exploratory Spatial Data Analysis and Confirmatory Spatial Data Analysis results in layman friendly visual representations. This course is geospatial centric, hence, it is important for you to demonstrate your competency in using appropriate geovisualisation techniques to reveal and communicate the findings of your analysis.
+
+-   **Reproducibility (15 marks):** This is an important learning outcome of this exercise. You will be assessed on your ability to provide a comprehensive documentation of the analysis procedures in the form of code chunks of Quarto. It is important to note that it is not enough by merely providing the code chunk without any explanation on the purpose and R function(s) used.
+
+-   **Bonus (15 marks):** Demonstrate your ability to employ methods beyond what you had learned in class to gain insights from the data.
+:::
 
 ## **Installing and Loading the R packages**
 
@@ -67,7 +102,7 @@ pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
 Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
 
 ```{r}
-acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
+acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
   st_as_sf(coords = c( "longitude","latitude"),
            crs = 4326) %>%
   st_transform(crs = 32647) %>%
@@ -75,7 +110,7 @@ acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
 ```
 
 ```{r}
-tmap_mode('view') # interactive view
+tmap_mode('plot') # interactive view
 acled_sf %>% filter(year == 2023 |
                       event_type == 'Political Violence') %>%
   tm_shape() + 

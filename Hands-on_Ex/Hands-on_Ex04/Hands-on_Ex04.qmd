@@ -12,79 +12,52 @@ format:
     number-depth: 3
 ---
 
-## **Overview**
+## **4.1 Overview**
 
-**Network constrained Spatial Point Patterns Analysis (NetSPAA)** is a collection of spatial point patterns analysis methods special developed for analysing spatial point event occurs on or alongside network. The spatial point event can be locations of traffic accident or childcare centre for example. The network, on the other hand can be a road network or river network.
+A spatio-temporal point process (also called space-time or spatial-temporal point process) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.
 
-In this hands-on exercise, you are going to gain hands-on experience on using appropriate functions of **spNetwork** package:
+The analysis of spatio-temporal point patterns is becoming increasingly necessary, given the rapid emergence of geographically and temporally indexed data in a wide range of fields. Several spatio-temporal point patterns analysis methods have been introduced and implemented in R in the last ten years. This chapter shows how various R packages can be combined to run a set of spatio-temporal point pattern analyses in a guided and intuitive way. A real world forest fire events in Kepulauan Bangka Belitung, Indonesia from 1st January 2023 to 31st December 2023 is used to illustrate the methods, procedures and interpretations.
 
--   to derive **network kernel density estimation (NKDE)**, and
+## **4.2 Learning Outcome**
 
--   to perform network G-function and k-function analysis
+### **4.2.1 The research questions**
 
-## **Data Used**
+The specific questions we would like to answer are:
 
-In this study, we will analyse the spatial distribution of childcare centre in [Punggol planning area](https://en.wikipedia.org/wiki/Punggol). For the purpose of this study, two geospatial data sets will be used. They are:
+-   are the locations of forest fire in Kepulauan Bangka Belitung spatial and spatio-temporally independent?
 
--   *Punggol_St*, a line features geospatial data which store the road network within Punggol Planning Area.
+-   if the answer is NO, where and when the observed forest fire locations tend to cluster?
 
--   *Punggol_CC*, a point feature geospatial data which store the location of childcare centres within Punggol Planning Area.
+## **4.3 The data**
 
-Both data sets are in ESRI shapefile format.
+For the purpose of this exercise, two data sets will be used, they are:
 
-## **Installing and launching the R packages**
+-   *forestfires*, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from [Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/download/). For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.
 
-In this hands-on exercise, four R packages will be used, they are:
+-   *Kepulauan_Bangka_Belitung*, an ESRI shapefile showing the sub-district (i.e. [kelurahan](https://en.wikipedia.org/wiki/Villages_of_Indonesia)) boundary of Kepulauan Bangka Belitung. The data set was downloaded from [Indonesia Geospatial](https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html) portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.
 
--   [spNetwork](https://cran.r-project.org/web/packages/spNetwork/index.html), which provides functions to perform Spatial Point Patterns Analysis such as kernel density estimation (KDE) and K-function on network. It also can be used to build spatial matrices (‘listw’ objects like in ‘spdep’ package) to conduct any kind of traditional spatial analysis with spatial weights based on reticular distances.
+## **4.4 Installing and Loading the R packages**
 
--   [sf](https://r-spatial.github.io/sf/index.html) package provides functions to manage, processing, and manipulate **Simple Features**, a formal geospatial data standard that specifies a storage and access model of spatial geometries such as points, lines, and polygons.
+For the purpose of this study, six R packages will be used. They are:
 
--   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
+-   [**sf**](https://r-spatial.github.io/sf/) provides functions for importing processing and wrangling geospatial data,,
 
-Use the code chunk below to install and launch the four R packages.
+-   [**raster**](https://rspatial.org/raster/) for handling raster data in R,
 
-```{r}
-pacman::p_load(sf, spNetwork, tmap, tidyverse)
-```
+-   [**spatstat**](https://cran.r-project.org/web/packages/spatstat/index.html) for performing Spatial Point Patterns Analysis such as kcross, Lcross, etc.,
 
-## **Data Import and Preparation**
+-   [**sparr**](https://tilmandavies.github.io/sparr/index.html) provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference. Fixed-bandwidth spatiotemporal density and relative risk estimation is also supported
 
-The code chunk below uses `st_read()` of **sf** package to important Punggol_St and Punggol_CC geospatial data sets into RStudio as sf data frames.
+-   [**tmap**](https://r-tmap.github.io/tmap/) provides functions to produce cartographic quality thematic maps, and
 
-```{r}
-network <- st_read(dsn="data/geospatial", 
-                   layer="Punggol_St")
-```
+-   [**tidyverse**](https://www.tidyverse.org/), a family of R packages that provide functions to perform common data science tasks including and not limited to data import, data transformation, data wrangling and data visualisation.
 
 ```{r}
-childcare <- st_read(dsn="data/geospatial",
-                     layer="Punggol_CC")
+pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
 ```
 
-We can examine the structure of the output simple features data tables in RStudio. Alternative, code chunk below can be used to print the content of network and childcare simple features objects by using the code chunk below.
+## **4.5 Importing and Preparing Study Area**
 
-::: panel-tabset
-## Childcare
+### **4.5.1 Importing study area**
 
-```{r}
-childcare
-```
-
-## Network
-
-```{r}
-network
-```
-:::
-
-When exploring spNetwork’s functions, it came to my attention that spNetwork is expecting the geospatial data contains complete CRS information.
-
-## **Visualising the Geospatial Data**
-
-Before we jump into the analysis, it is a good practice to visualise the geospatial data. There are at least two ways to visualise the geospatial data. One way is by using *plot()* of Base R as shown in the code chunk below.
-
-```{r}
-plot(st_geometry(network))
-plot(childcare,add=T,col='red',pch = 19)
-```
+Code chunk below is used import study area (i.e. Kepulauan Bangka Belitung) into R environment.

@@ -8,9 +8,9 @@
 
 <meta name="author" content="Han Ming Yan">
 <meta name="dcterms.date" content="2024-09-02">
-<meta name="keywords" content="Spatial Analysis, Point Patterns, First-Order Analysis, Second-Order Analysis, Monte Carlo simulation">
+<meta name="keywords" content="Spatial Analysis, Point Patterns, First-Order Analysis, Second-Order Analysis, Monte Carlo simulation, Myanmar, Myanmar Civil War Crisis">
 
-<title>IS415-GAA - In-Class Exercise 3: 1st &amp; 2nd Order Spatial Point Patterns Analysis Methods</title>
+<title>IS415-GAA - In-Class Exercise 3: Geospatial analytics for Social Good - Myanmar Arm Conflict Case Study</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -4694,8 +4694,7 @@ vertical-align: -.125em;
 }</script>
 
 
-<style type="text/css">
-</style>
+<style type="text/css"></style>
 </head>
 
 <body class="nav-fixed">
@@ -4853,8 +4852,7 @@ vertical-align: -.125em;
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">In-Class Exercise 3: 1st &amp; 2nd Order Spatial Point Patterns Analysis Methods</h1>
-            <p class="subtitle lead">A practical guide to analyzing spatial patterns</p>
+      <h1 class="title">In-Class Exercise 3: Geospatial analytics for Social Good - Myanmar Arm Conflict Case Study</h1>
                       </div>
   </div>
     
@@ -4878,7 +4876,7 @@ vertical-align: -.125em;
       <div>
       <div class="quarto-title-meta-heading">Modified</div>
       <div class="quarto-title-meta-contents">
-        <p class="date-modified">September 2, 2024</p>
+        <p class="date-modified">September 13, 2024</p>
       </div>
     </div>
       
@@ -4894,7 +4892,7 @@ vertical-align: -.125em;
   <div>
     <div class="keywords">
       <div class="block-title">Keywords</div>
-      <p>Spatial Analysis, Point Patterns, First-Order Analysis, Second-Order Analysis, Monte Carlo simulation</p>
+      <p>Spatial Analysis, Point Patterns, First-Order Analysis, Second-Order Analysis, Monte Carlo simulation, Myanmar, Myanmar Civil War Crisis</p>
     </div>
   </div>
   
@@ -4912,7 +4910,7 @@ vertical-align: -.125em;
   <li><a href="#installing-and-loading-the-r-packages" id="toc-installing-and-loading-the-r-packages" class="nav-link" data-scroll-target="#installing-and-loading-the-r-packages"><span class="header-section-number">1.2</span> <strong>Installing and Loading the R packages</strong></a></li>
   </ul></li>
   <li><a href="#issue-1-installing-maptools" id="toc-issue-1-installing-maptools" class="nav-link" data-scroll-target="#issue-1-installing-maptools"><span class="header-section-number">2</span> Issue 1: Installing maptools</a></li>
-  <li><a href="#issue-2-creating-coastal-outline" id="toc-issue-2-creating-coastal-outline" class="nav-link" data-scroll-target="#issue-2-creating-coastal-outline"><span class="header-section-number">3</span> Issue 2: Creating coastal outline</a></li>
+  <li><a href="#import-data-file" id="toc-import-data-file" class="nav-link" data-scroll-target="#import-data-file"><span class="header-section-number">3</span> Import Data File</a></li>
   </ul>
 </nav>
     </div>
@@ -4925,19 +4923,16 @@ vertical-align: -.125em;
 
 <section id="overview" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> <strong>Overview</strong></h1>
-<p>Spatial Point Pattern Analysis is the evaluation of the pattern or distribution, of a set of points on a surface. The point can be location of:</p>
-<ul>
-<li><p>events such as crime, traffic accident and disease onset, or</p></li>
-<li><p>business services (coffee and fastfood outlets) or facilities such as childcare and eldercare.</p></li>
-</ul>
-<p>Using appropriate functions of <a href="https://cran.r-project.org/web/packages/spatstat/">spatstat</a>, this hands-on exercise aims to discover the spatial point processes of childecare centres in Singapore.</p>
+<p>This exercise focuses on applying geospatial analytics to explore and analyze the impact of the armed conflict in Myanmar. The aim is to use spatial data and analytical techniques to better understand the conflict’s dynamics, identify affected regions, and assess the humanitarian implications. This case study offers a real-world application of geospatial tools for social good, demonstrating how data-driven insights can inform decision-making in crisis situations.</p>
 <section id="data-used" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="data-used"><span class="header-section-number">1.1</span> <strong>Data used</strong></h2>
-<p>To provide answers to the questions above, three data sets will be used. They are:</p>
+<p>To provide answers to the questions above, the data set that will be used is:</p>
 <ul>
-<li><p><code>CHILDCARE</code>, a point feature data providing both location and attribute information of childcare centres. It was downloaded from Data.gov.sg and is in geojson format.</p></li>
-<li><p><code>MP14_SUBZONE_WEB_PL</code>, a polygon feature data providing information of URA 2014 Master Plan Planning Subzone boundary data. It is in ESRI shapefile format. This data set was also downloaded from Data.gov.sg.</p></li>
-<li><p><code>CostalOutline</code>, a polygon feature data showing the national boundary of Singapore. It is provided by SLA and is in ESRI shapefile format.</p></li>
+<li>ACLED_Myanmar.csv in the data folder</li>
+</ul>
+<p>Tools used:</p>
+<ul>
+<li><a href="https://acleddata.com/data-export-tool/"><strong>acledata</strong></a> <strong>requires Access Key, Given out later</strong></li>
 </ul>
 </section>
 <section id="installing-and-loading-the-r-packages" class="level2" data-number="1.2">
@@ -4960,45 +4955,34 @@ vertical-align: -.125em;
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|eval: false # it will no longer run anymore after first run</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#|warning: false</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;maptools&quot;</span>, <span class="at">repos =</span> <span class="st">&quot;https://packagemanager.posit.co/cran/2023-10-13&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Installing package into &#39;C:/Users/mngyn/AppData/Local/R/win-library/4.4&#39;
-(as &#39;lib&#39; is unspecified)</code></pre>
-</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>package &#39;maptools&#39; successfully unpacked and MD5 sums checked</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: cannot remove prior installation of package &#39;maptools&#39;</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in file.copy(savedcopy, lib, recursive = TRUE): problem copying
-C:\Users\mngyn\AppData\Local\R\win-library\4.4\00LOCK\maptools\libs\x64\maptools.dll
-to
-C:\Users\mngyn\AppData\Local\R\win-library\4.4\maptools\libs\x64\maptools.dll:
-Permission denied</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: restored &#39;maptools&#39;</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
+<pre><code>package &#39;maptools&#39; successfully unpacked and MD5 sums checked
+
 The downloaded binary packages are in
-    C:\Users\mngyn\AppData\Local\Temp\RtmpI3BdMW\downloaded_packages</code></pre>
+    C:\Users\mngyn\AppData\Local\Temp\Rtmpk37Wtg\downloaded_packages</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, tidyverse, raster, spatstat, maptools, sp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, tidyverse, raster, spatstat, maptools, sp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="issue-2-creating-coastal-outline" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Issue 2: Creating coastal outline</h1>
-<p>In sf package, there are two functions allows us to combine multiple simple features into one simple feature. They are st_combine() and st_union()</p>
+<section id="import-data-file" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Import Data File</h1>
+<p>Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sg_sf &lt;- mpsz_sf %&gt;% </span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   st_union()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># acled_sf &lt;- readr::read_csv(&quot;data/Myanmar/ACLED_Myanmar.csv&quot;) %&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   st_as_sf(coords = c( &quot;longitude&quot;,&quot;latitude&quot;),</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#            crs = 4326) %&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   st_transform(crs = 32647) %&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     mutate(event_date = dmy(event_date))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>st_union(x):<u>Combine several feature geometries into one, without union-ing or resolving internal boundaries.</u> <strong>(x must be object of class sf, sfc or sfg)</strong></p>
-<p>create point pattern: use ppp(x,y, …, window, marks[opt], check=TRUE, checkdup=check, drop=TRUE)</p>
+<p>Set tmap to view(‘view’)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">&#39;view&#39;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>tmap mode set to interactive viewing</code></pre>
+</div>
+</div>
 
 
 </section>

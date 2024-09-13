@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Han Ming Yan">
+<meta name="dcterms.date" content="2024-09-05">
 
-<title>IS415-GAA</title>
+<title>IS415-GAA - Hands-On Exercise 4: Network Constrained Spatial Point Patterns Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -74,7 +110,7 @@ ul.task-list li input[type="checkbox"] {
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -192,8 +228,16 @@ ul.task-list li input[type="checkbox"] {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
         <li>
-    <a class="dropdown-item" href="../../In-Class_Ex/In-Class_Ex01/In-Class_Ex01.html">
- <span class="dropdown-text">In-Class Exercsise 1</span></a>
+    <a class="dropdown-item" href="../../Take-Home_Ex/Take-Home_Ex01/Take-Home_Ex01.html">
+ <span class="dropdown-text">Take-Home Exercsise 1</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Take-Home_Ex/Take-Home_Ex02/Take-Home_Ex02.html">
+ <span class="dropdown-text">Take-Home Exercsise 2</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../Take-Home_Ex/Take-Home_Ex03/Take-Home_Ex03.html">
+ <span class="dropdown-text">Take-Home Exercsise 3</span></a>
   </li>  
     </ul>
   </li>
@@ -215,20 +259,117 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Hands-On Exercise 4: Network Constrained Spatial Point Patterns Analysis</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Han Ming Yan </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 5, 2024</p>
+      </div>
+    </div>
+    
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">September 13, 2024</p>
+      </div>
+    </div>
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> <strong>4.1 Overview</strong></a></li>
+  <li><a href="#learning-outcome" id="toc-learning-outcome" class="nav-link" data-scroll-target="#learning-outcome"><span class="header-section-number">2</span> <strong>4.2 Learning Outcome</strong></a>
+  <ul class="collapse">
+  <li><a href="#the-research-questions" id="toc-the-research-questions" class="nav-link" data-scroll-target="#the-research-questions"><span class="header-section-number">2.1</span> <strong>4.2.1 The research questions</strong></a></li>
+  </ul></li>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data"><span class="header-section-number">3</span> <strong>4.3 The data</strong></a></li>
+  <li><a href="#installing-and-loading-the-r-packages" id="toc-installing-and-loading-the-r-packages" class="nav-link" data-scroll-target="#installing-and-loading-the-r-packages"><span class="header-section-number">4</span> <strong>4.4 Installing and Loading the R packages</strong></a></li>
+  <li><a href="#importing-and-preparing-study-area" id="toc-importing-and-preparing-study-area" class="nav-link" data-scroll-target="#importing-and-preparing-study-area"><span class="header-section-number">5</span> <strong>4.5 Importing and Preparing Study Area</strong></a>
+  <ul class="collapse">
+  <li><a href="#importing-study-area" id="toc-importing-study-area" class="nav-link" data-scroll-target="#importing-study-area"><span class="header-section-number">5.1</span> <strong>4.5.1 Importing study area</strong></a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
 
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> <strong>4.1 Overview</strong></h2>
+<p>A spatio-temporal point process (also called space-time or spatial-temporal point process) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.</p>
+<p>The analysis of spatio-temporal point patterns is becoming increasingly necessary, given the rapid emergence of geographically and temporally indexed data in a wide range of fields. Several spatio-temporal point patterns analysis methods have been introduced and implemented in R in the last ten years. This chapter shows how various R packages can be combined to run a set of spatio-temporal point pattern analyses in a guided and intuitive way. A real world forest fire events in Kepulauan Bangka Belitung, Indonesia from 1st January 2023 to 31st December 2023 is used to illustrate the methods, procedures and interpretations.</p>
+</section>
+<section id="learning-outcome" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="learning-outcome"><span class="header-section-number">2</span> <strong>4.2 Learning Outcome</strong></h2>
+<section id="the-research-questions" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="the-research-questions"><span class="header-section-number">2.1</span> <strong>4.2.1 The research questions</strong></h3>
+<p>The specific questions we would like to answer are:</p>
+<ul>
+<li><p>are the locations of forest fire in Kepulauan Bangka Belitung spatial and spatio-temporally independent?</p></li>
+<li><p>if the answer is NO, where and when the observed forest fire locations tend to cluster?</p></li>
+</ul>
+</section>
+</section>
+<section id="the-data" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="the-data"><span class="header-section-number">3</span> <strong>4.3 The data</strong></h2>
+<p>For the purpose of this exercise, two data sets will be used, they are:</p>
+<ul>
+<li><p><em>forestfires</em>, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from <a href="https://firms.modaps.eosdis.nasa.gov/download/">Fire Information for Resource Management System</a>. For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.</p></li>
+<li><p><em>Kepulauan_Bangka_Belitung</em>, an ESRI shapefile showing the sub-district (i.e.&nbsp;<a href="https://en.wikipedia.org/wiki/Villages_of_Indonesia">kelurahan</a>) boundary of Kepulauan Bangka Belitung. The data set was downloaded from <a href="https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html">Indonesia Geospatial</a> portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.</p></li>
+</ul>
+</section>
+<section id="installing-and-loading-the-r-packages" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="installing-and-loading-the-r-packages"><span class="header-section-number">4</span> <strong>4.4 Installing and Loading the R packages</strong></h2>
+<p>For the purpose of this study, six R packages will be used. They are:</p>
+<ul>
+<li><p><a href="https://r-spatial.github.io/sf/"><strong>sf</strong></a> provides functions for importing processing and wrangling geospatial data,,</p></li>
+<li><p><a href="https://rspatial.org/raster/"><strong>raster</strong></a> for handling raster data in R,</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/spatstat/index.html"><strong>spatstat</strong></a> for performing Spatial Point Patterns Analysis such as kcross, Lcross, etc.,</p></li>
+<li><p><a href="https://tilmandavies.github.io/sparr/index.html"><strong>sparr</strong></a> provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference. Fixed-bandwidth spatiotemporal density and relative risk estimation is also supported</p></li>
+<li><p><a href="https://r-tmap.github.io/tmap/"><strong>tmap</strong></a> provides functions to produce cartographic quality thematic maps, and</p></li>
+<li><p><a href="https://www.tidyverse.org/"><strong>tidyverse</strong></a>, a family of R packages that provide functions to perform common data science tasks including and not limited to data import, data transformation, data wrangling and data visualisation.</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, raster, spatstat, sparr, tmap, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="importing-and-preparing-study-area" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="importing-and-preparing-study-area"><span class="header-section-number">5</span> <strong>4.5 Importing and Preparing Study Area</strong></h2>
+<section id="importing-study-area" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="importing-study-area"><span class="header-section-number">5.1</span> <strong>4.5.1 Importing study area</strong></h3>
+<p>Code chunk below is used import study area (i.e.&nbsp;Kepulauan Bangka Belitung) into R environment.</p>
 
+
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -69,11 +69,11 @@ pacman::p_load(tmap, sf, tidyverse, raster, spatstat, maptools, sp)
 Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
 
 ```{r}
-acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
-  st_as_sf(coords = c( "longitude","latitude"),
-           crs = 4326) %>%
-  st_transform(crs = 32647) %>%
-    mutate(event_date = dmy(event_date))
+# acled_sf <- readr::read_csv("data/Myanmar/ACLED_Myanmar.csv") %>%
+#   st_as_sf(coords = c( "longitude","latitude"),
+#            crs = 4326) %>%
+#   st_transform(crs = 32647) %>%
+#     mutate(event_date = dmy(event_date))
   
 ```
 

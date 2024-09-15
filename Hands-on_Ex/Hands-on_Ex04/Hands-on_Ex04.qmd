@@ -12,52 +12,224 @@ format:
     number-depth: 3
 ---
 
-## **4.1 Overview**
-
-A spatio-temporal point process (also called space-time or spatial-temporal point process) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.
-
-The analysis of spatio-temporal point patterns is becoming increasingly necessary, given the rapid emergence of geographically and temporally indexed data in a wide range of fields. Several spatio-temporal point patterns analysis methods have been introduced and implemented in R in the last ten years. This chapter shows how various R packages can be combined to run a set of spatio-temporal point pattern analyses in a guided and intuitive way. A real world forest fire events in Kepulauan Bangka Belitung, Indonesia from 1st January 2023 to 31st December 2023 is used to illustrate the methods, procedures and interpretations.
-
-## **4.2 Learning Outcome**
-
-### **4.2.1 The research questions**
-
-The specific questions we would like to answer are:
-
--   are the locations of forest fire in Kepulauan Bangka Belitung spatial and spatio-temporally independent?
-
--   if the answer is NO, where and when the observed forest fire locations tend to cluster?
-
-## **4.3 The data**
-
-For the purpose of this exercise, two data sets will be used, they are:
-
--   *forestfires*, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from [Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/download/). For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.
-
--   *Kepulauan_Bangka_Belitung*, an ESRI shapefile showing the sub-district (i.e. [kelurahan](https://en.wikipedia.org/wiki/Villages_of_Indonesia)) boundary of Kepulauan Bangka Belitung. The data set was downloaded from [Indonesia Geospatial](https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html) portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.
-
-## **4.4 Installing and Loading the R packages**
-
-For the purpose of this study, six R packages will be used. They are:
-
--   [**sf**](https://r-spatial.github.io/sf/) provides functions for importing processing and wrangling geospatial data,,
-
--   [**raster**](https://rspatial.org/raster/) for handling raster data in R,
-
--   [**spatstat**](https://cran.r-project.org/web/packages/spatstat/index.html) for performing Spatial Point Patterns Analysis such as kcross, Lcross, etc.,
-
--   [**sparr**](https://tilmandavies.github.io/sparr/index.html) provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference. Fixed-bandwidth spatiotemporal density and relative risk estimation is also supported
-
--   [**tmap**](https://r-tmap.github.io/tmap/) provides functions to produce cartographic quality thematic maps, and
-
--   [**tidyverse**](https://www.tidyverse.org/), a family of R packages that provide functions to perform common data science tasks including and not limited to data import, data transformation, data wrangling and data visualisation.
+# Import Packages
 
 ```{r}
-pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
+# to add pipe %>%: ctrl + shift + M
+# to add <-: alt + -
 ```
 
-## **4.5 Importing and Preparing Study Area**
+```{r}
+pacman::p_load(tmap, sf, tidyverse, raster, spatstat, sp, sparr)
+```
 
-### **4.5.1 Importing study area**
+# Import Data
 
-Code chunk below is used import study area (i.e. Kepulauan Bangka Belitung) into R environment.
+```{r}
+#| eval: false
+kdb <- st_read(dsn="data/rawdata", layer = "Kepulauan_Bangka_Belitung")
+```
+
+## View the Data
+
+```{r}
+kdb
+```
+
+```{r}
+kdb_sf <- st_read(dsn="data/rawdata", layer = "Kepulauan_Bangka_Belitung") %>%
+  st_union() %>%
+  st_zm(drop = TRUE, what = "ZM") %>% 
+  st_transform(crs = 32748)
+```
+
+## Converting to OWIN format
+
+`owin` stands for **"observation window"**,a spatial window or region of interest where spatial point patterns are observed or analyzed.
+
+```{r}
+kdb_owin <- as.owin(kdb_sf)
+kdb_owin
+paste("kdb_owin class type:", class(kdb_owin))
+```
+
+# Importing and Preparing Forest Fire Data
+
+## As a data frame
+
+```{r}
+fire <- read.csv("data/rawdata/forestfires.csv")
+```
+
+## As sf data frame
+
+```{r}
+fire_sf <- utils::read.csv("data/rawdata/forestfires.csv") %>% 
+  sf::st_as_sf(coords = c("longitude", "latitude"),
+           crs = 4326) %>% 
+  sf::st_transform(crs = 32748)
+```
+
+```{r}
+fire_sf
+```
+
+convert data type of acq_date to numeric
+
+```{r}
+fire_sf <- fire_sf %>% 
+  dplyr::mutate(DayofYear = lubridate::yday(acq_date)) %>% 
+  dplyr::mutate(Month_num = lubridate::month(acq_date)) %>% 
+  dplyr::mutate(Month_fac = lubridate::month(acq_date,
+                           label = TRUE,
+                           abbr = FALSE))
+```
+
+# Visualising the Fire Points
+
+## Overall plot
+
+::: panel-tabset
+## DIY
+
+Prepare a point symbol map showing the distribution of fire points.
+
+## CODE
+
+note: overview/polygon plot first, then lines, then the dots/bubbles.
+
+```{r}
+tmap::tm_shape(kdb_sf) + # plot the map of myanmar outline first
+  tmap::tm_polygons() +
+tmap::tm_shape(fire_sf) + #plot the fire points using dots
+  tmap::tm_dots()
+
+```
+:::
+
+## Visualising geographic distribution of forest fires by month
+
+```{r}
+tmap::tm_shape(kdb_sf) + 
+  tmap::tm_polygons() + 
+tmap::tm_shape(fire_sf) +
+  tmap::tm_dots(size = 0.1) +
+  #facets is small multiples
+tmap::tm_facets(by="Month_fac",
+          free.coords = FALSE,
+          drop.units = TRUE)
+```
+
+## computing STKDE by Month
+
+```{r}
+fire_month <- fire_sf %>% 
+  dplyr::select(Month_num)
+```
+
+### Creating ppp
+
+note: ppp format only accept numeric format
+
+```{r}
+fire_month_ppp <- as.ppp(fire_month)
+fire_month_ppp
+```
+
+Show the summary
+
+```{r}
+summary(fire_month_ppp)
+```
+
+### Including OWIN object
+
+ccombine origin_am_ppp and am_owin objects into one, note the class will remain as ppp
+
+```{r}
+fire_month_owin <- fire_month_ppp[kdb_owin] #get the layers needed for the analysis
+summary(fire_month_owin)
+class(fire_month_owin)
+```
+
+Plot the fire month owin data
+
+```{r}
+plot(fire_month_owin)
+```
+
+### Computing Spatio-temporal KDE
+
+spattemp.density() of the sparr package is used to compute the STKDE
+
+```{r}
+st_kde <- spattemp.density(fire_month_owin)
+summary(st_kde)
+
+```
+
+### Plotting the spatio-temporal KDE Object
+
+we will plot the KDE Object from July onwards, reason is because the fire points tend to happen in the late summer period from July to December
+
+```{r}
+tims <- c(7,8,9,10,11,12)
+par(mfcol=c(2,3)) # 2 rows, 3 columns
+for (i in tims) {
+  plot(st_kde, i,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("KDE at month", i))
+}
+```
+
+## computing STKDE by Day of Year
+
+```{r}
+tmap::tm_shape(kdb_sf) + 
+  tmap::tm_polygons() + 
+tmap::tm_shape(fire_sf) +
+  tmap::tm_dots(size = 0.1) +
+  #facets is small multiples
+tmap::tm_facets(by="DayofYear",
+          free.coords = FALSE,
+          drop.units = TRUE)
+```
+
+```{r}
+fire_doy <- fire_sf %>% 
+  dplyr::select(DayofYear)
+```
+
+```{r}
+fire_doy_ppp <- as.ppp(fire_doy)
+fire_doy_ppp
+summary(fire_month_ppp)
+```
+
+```{r}
+fire_doy_owin <- fire_doy_ppp[kdb_owin] #get the layers needed for the analysis
+summary(fire_doy_owin)
+```
+
+```{r}
+plot(fire_doy_owin)
+```
+
+```{r}
+st_kde2 <- spattemp.density(fire_doy_owin)
+summary(st_kde2)
+```
+
+```{r}
+tims <- c(7,8,9,10,11,12)
+ # 2 rows, 3 columns
+for (i in tims) {
+  plot(st_kde, i,
+       override.par=FALSE,
+       fix.range=TRUE,
+       main=paste("KDE at day", i))
+}
+```
+
+## computing STKDE by Day of Year, improved method

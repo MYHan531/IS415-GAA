@@ -239,5 +239,3 @@ for (i in tims) {
        main=paste("KDE at day", i))
 }
 ```
-
-## computing STKDE by Day of Year, improved method

@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html",
+    "href": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html",
+    "title": "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods",
+    "section": "",
+    "text": "pacman::p_load(tmap, sf, tidyverse, spdep, knitr, GWmodel, dplyr)"
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#import-hunan_shapefile",
+    "href": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#import-hunan_shapefile",
+    "title": "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods",
+    "section": "2.1 Import hunan_shapefile",
+    "text": "2.1 Import hunan_shapefile\n\nhunan_sf &lt;- st_read(dsn = \"data/geospatial\", \n                 layer = \"Hunan\")"
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#import-hunan2012.csv",
+    "href": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#import-hunan2012.csv",
+    "title": "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods",
+    "section": "2.2 Import hunan2012.csv",
+    "text": "2.2 Import hunan2012.csv\n\nhunan2012 &lt;- read_csv(\"data/aspatial/Hunan_2012.csv\")"
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#perform-relational-joins-for-the-2-hunan-data-frames",
+    "href": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#perform-relational-joins-for-the-2-hunan-data-frames",
+    "title": "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods",
+    "section": "2.3 Perform Relational Joins for the 2 Hunan data frames",
+    "text": "2.3 Perform Relational Joins for the 2 Hunan data frames\n\n# all of hunan_sf plus any similar colnames from hunan2012\nhunan_sf &lt;- left_join(hunan_sf,hunan2012) %&gt;% \n  dplyr::select(1:3, 7, 15, 16, 31, 32) # only see these columns from the hunan_sf\n\n\n2.3.1 Save data into the rds folder\nWe do this so that we do not need to re-run the previous codes, to keep the derived data in a .rds file\n\nwrite_rds(hunan_sf, \"data/rds/hunan_sf.rds\") # keep in tibble format\n\n\n\n2.3.2 To read back the data, (if we do not have it in our environment yet)"
+  },
+  {
+    "objectID": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#determine-adaptive-bandwidth",
+    "href": "In-Class_Ex/In-Class_Ex05/In-Class_Ex05.html#determine-adaptive-bandwidth",
+    "title": "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods",
+    "section": "4.1 Determine adaptive bandwidth",
+    "text": "4.1 Determine adaptive bandwidth\n\nCross-ValidationAkaike information criterion (AIC)\n\n\n\nbw_CV &lt;- bw.gwr(GDPPC ~ 1,\n                 data = hunan_sp,\n                 approach = \"CV\",\n                 adaptive = TRUE, # false means you are calculating fixed distance\n                 kernel = \"bisquare\",\n                 longlat = T)\n\nAdaptive bandwidth: 62 CV score: 15515442343 \nAdaptive bandwidth: 46 CV score: 14937956887 \nAdaptive bandwidth: 36 CV score: 14408561608 \nAdaptive bandwidth: 29 CV score: 14198527496 \nAdaptive bandwidth: 26 CV score: 13898800611 \nAdaptive bandwidth: 22 CV score: 13662299974 \nAdaptive bandwidth: 22 CV score: 13662299974 \n\n\n\n\n\nbw_AIC &lt;- bw.gwr(GDPPC ~ 1,\n                 data = hunan_sp,\n                 approach = \"AIC\",\n                 adaptive = TRUE, # false means you are calculating fixed distance\n                 kernel = \"bisquare\",\n                 longlat = T) # impt: in the package, it will transform your data into great circle, in kilometres, NOT metre\n\nAdaptive bandwidth (number of nearest neighbours): 62 AICc value: 1923.156 \nAdaptive bandwidth (number of nearest neighbours): 46 AICc value: 1920.469 \nAdaptive bandwidth (number of nearest neighbours): 36 AICc value: 1917.324 \nAdaptive bandwidth (number of nearest neighbours): 29 AICc value: 1916.661 \nAdaptive bandwidth (number of nearest neighbours): 26 AICc value: 1914.897 \nAdaptive bandwidth (number of nearest neighbours): 22 AICc value: 1914.045 \nAdaptive bandwidth (number of nearest neighbours): 22 AICc value: 1914.045"
+  }
+]

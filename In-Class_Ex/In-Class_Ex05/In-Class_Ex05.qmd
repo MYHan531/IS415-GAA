@@ -1,0 +1,189 @@
+---
+title: "In-Class Exercise 5: Geographically Weighted Statistics - gwModel methods"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-16
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+---
+
+# Install & Load the Packages
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse, spdep, knitr, GWmodel, dplyr)
+```
+
+# Import the shapefile and the csv file
+
+## Import hunan_shapefile
+
+```{r}
+#| eval: false
+hunan_sf <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+## Import hunan2012.csv
+
+```{r}
+#| eval: false
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+## Perform Relational Joins for the 2 Hunan data frames
+
+```{r}
+#| eval: false # since we will have the rds file, we will not need to run this code again
+#| 
+# all of hunan_sf plus any similar colnames from hunan2012
+hunan_sf <- left_join(hunan_sf,hunan2012) %>% 
+  dplyr::select(1:3, 7, 15, 16, 31, 32) # only see these columns from the hunan_sf
+```
+
+### Save data into the rds folder
+
+We do this so that we do not need to re-run the previous codes, to keep the derived data in a .rds file
+
+```{r}
+#| eval: false
+write_rds(hunan_sf, "data/rds/hunan_sf.rds") # keep in tibble format
+```
+
+### To read back the data, (if we do not have it in our environment yet)
+
+```{r}
+#| echo: false # this allows user to not see the code output lines, but it is still running
+hunan_sf <- read_rds("data/rds/hunan_sf.rds")
+```
+
+# Convert to SpatialPolygonDataFrame (sp)
+
+| Note: GWmodel presently is built around the older sp and not sf formats for handling spatial data in R
+
+```{r}
+hunan_sp <- hunan_sf %>% 
+  as_Spatial() #removes the geometry from the sf dataframe, and places it in a separate list
+```
+
+```{r}
+hunan_sp@data # different from sf$colname, @ is specifically for sp data frames
+```
+
+# Geographically Weighted Summary Statistics with adaptive bandwidth
+
+## Determine adaptive bandwidth
+
+::: panel-tabset
+### Cross-Validation
+
+```{r}
+bw_CV <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "CV",
+                 adaptive = TRUE, # false means you are calculating fixed distance
+                 kernel = "bisquare",
+                 longlat = T)
+# the recommeneded number of Geo measures is 22 as seen in the output
+```
+
+### Akaike information criterion (AIC)
+
+```{r}
+bw_AIC <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "AIC",
+                 adaptive = TRUE, # false means you are calculating fixed distance
+                 kernel = "bisquare",
+                 longlat = T) # impt: in the package, it will transform your data into great circle, in kilometres, NOT metre
+
+```
+:::
+
+## Computing geographically weighted summary statistics
+
+```{r}
+gwstat <- gwss(data = hunan_sp,
+               vars = "GDPPC",                
+               bw = bw_AIC,                
+               kernel = "bisquare",                
+               adaptive = TRUE,                
+               longlat = T)
+# fast as we only have 88 rows of data
+# the one that we need in gwstat is the SDF (SpatialPolygonsDataFrame)
+```
+
+```{r}
+gwstat[["SDF"]]
+# view(gwstat[["SDF"]]@data) # this one includes itself unlike the previous sp data
+```
+
+## Preparing the output data
+
+The Code chunk below is used to extract SDf data table from gwss object output from gwss(). It will be converted to a data frame by using base::as.data.frame
+
+```{r}
+gwstat_df <- as.data.frame(gwstat$SDF)
+# Next we will use cbind() to append the newly derived data.frame onto hunan_sf sf data.frame
+hunan_gstat <-  cbind(hunan_sf, gwstat_df)
+```
+
+## Visualising geographically weighted summary statistics
+
+```{r}
+tm_shape(hunan_gstat) +
+  tm_fill("GDPPC_LM", n=5, style = "quantile") + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Distribution of geographically weighted mean",
+            main.title.position = "center",
+            main.title.size = 2.0,
+            legend.text.size = 1.2,
+            legend.height = 1.50,
+            legend.width = 1.50,
+            frame = TRUE)
+#interactive view, avoid as much as possible, it might hang the browser as the memory is too high when there is too many interactive views, even 2 of them can crash the browser and RStudios
+```
+
+# Geographically Weighted Summary Statistics with fixed bandwidth
+
+## Determine fixed bandwidth 
+
+to do so, it is the same as the adaptive bandwidth except that the adaptive condition will now be FALSE.
+
+::: panel-tabset
+### Cross-Validation
+
+```{r}
+bw_CV <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "CV",
+                 adaptive = FALSE, # false means you are calculating fixed distance, TRUE means you are calculating adaptive distances
+                 kernel = "bisquare",
+                 longlat = T)
+# 76.29123 CV score: 13442844676, it gave 2 different distances to the AIC, quite a big difference compared to the adaptive bandwidth
+
+# there is no right or wrong answer, up to you to choose. but must visualise the result.
+```
+
+### Akaike information criterion (AIC)
+
+```{r}
+bw_AIC <- bw.gwr(GDPPC ~ 1,
+                 data = hunan_sp,
+                 approach = "AIC",
+                 adaptive = FALSE,
+                 kernel = "bisquare",
+                 longlat = T) # impt: in the package, it will transform your data into great circle, in kilometres, NOT metre
+# 160.5517 AICc value: 1919.391 
+
+```
+:::

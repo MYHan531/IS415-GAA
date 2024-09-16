@@ -86,7 +86,7 @@ In this hands-on exercise, five R packages will be used, they are:
 
 Use the code chunk below to install and launch the five R packages.
 
-# Issue 1: Installing maptools
+# Installing maptools
 
 **maptools** is retired as of October 2023 and binary is removed from CRAN. However, we can still download from [**Posit Public Package Manager**](https://packagemanager.posit.co/client/) snapshots by using the code chunk specified
 
@@ -97,10 +97,10 @@ install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-
 ```
 
 ```{r}
-pacman::p_load(tmap, sf, tidyverse, raster, spatstat, sp, sparr)
+pacman::p_load(tmap, sf, tidyverse, raster, spatstat, sp, sparr, dplyr)
 ```
 
-Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data
+Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data. We will also import the kml data which gives the outline of the country
 
 ```{r}
 acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
@@ -108,6 +108,29 @@ acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
            crs = 4326) %>%
   st_transform(crs = 32647) %>%
     mutate(event_date = dmy(event_date))
+adm0 <- st_read("data/myanmar/geonode-mmr_polbnda_adm0_250k_mimu_1.kml")
+adm2 <- st_read("data/myanmar/geonode-mmr_polbnda_adm2_250k_mimu.kml")
+adm3 <- st_read("data/myanmar/geonode-mmr_polbnda_adm3_250k_mimu_1.kml")
+```
+
+```{r}
+head(acled_sf)
+```
+
+Next i want to find out about what column names are found in the csv data, so that i can add/remove columns if needed.
+
+```{r}
+colnames(acled_sf)
+```
+
+since the iso, country and region will definitely be the same for the entire data, we will remove unneccessary data to make reading the data simpler by using the select function from the dplyr package.
+
+```{r}
+acled_sf <- acled_sf %>% dplyr::select(-c("iso", "region", "country", "notes"))
+```
+
+```{r}
+colnames(acled_sf)
 ```
 
 ```{r}
@@ -116,85 +139,123 @@ acled_sf %>% filter(year == 2023 |
                       event_type == 'Political Violence') %>%
   tm_shape() + 
   tm_dots()
-tmap_mode('plot') # static view
+# tmap_mode('plot') # static view
 ```
 
-## **Converting ACLED_sf frame to sp’s Spatial\* class**
+## Convert acled_sf into their various quarters (10 in total)
 
 ```{r}
-acled_myanmar <- as_Spatial(acled_sf)
+# Convert event_date to quarters for quarterly analysis, shift quarter to 4th column for easier reference
+myanmar_sf <- acled_sf %>%
+  mutate(quarter = paste0(year(event_date), " Q", quarter(event_date))) %>%
+  dplyr::select(1:3, quarter, everything())
 ```
 
-## Display
+### Extract into various data frames based on the quarters
 
 ```{r}
-acled_myanmar
-```
+# Get all quarters from the data
+unique_quarters <- unique(myanmar_sf$quarter)
 
-## Import the kml files
-
-```{r}
-adm0 <- st_read("data/myanmar/geonode-mmr_polbnda_adm0_250k_mimu_1.kml")
-adm2 <- st_read("data/myanmar/geonode-mmr_polbnda_adm2_250k_mimu.kml")
-adm3 <- st_read("data/myanmar/geonode-mmr_polbnda_adm3_250k_mimu_1.kml")
-```
-
-```{r}
-# Convert event_date to quarters for quarterly analysis
-acled_sf$quarter <- cut(acled_sf$event_date, breaks = "quarter")
-
-```
-
-```{r}
-# Create a list to store KDEs for each quarter
-kde_list <- list()
-```
-
-```{r}
-# Loop through each quarter to create KDE layers
-quarters <- unique(acled_sf$quarter)
-for (q in quarters) {
-  # Filter data for the current quarter
-  acled_quarter <- acled_sf %>% filter(quarter == q)
+# Loop through each unique quarter and create separate data frames
+for (q in unique_quarters) {
+  # Create a filtered data frame for the current quarter
+  df <- myanmar_sf %>% filter(quarter == q)
+  df_name <- paste0("myanmar_sf_", gsub(" ", "_", q))
   
-  # Convert to spatstat ppp object
-  ppp_data <- as.ppp(st_coordinates(acled_quarter), W = owin(c(min(st_coordinates(acled_sf)[,1]), max(st_coordinates(acled_sf)[,1])),
-                                                            c(min(st_coordinates(acled_sf)[,2]), max(st_coordinates(acled_sf)[,2]))))
-  
-  # Derive KDE for this quarter
-  kde <- density(ppp_data, sigma = bw.ppl(ppp_data))
-  
-  # Store KDE in the list
-  kde_list[[as.character(q)]] <- kde
+  # Assign the data frame to a variable with the generated name
+  assign(df_name, df)
 }
+
+# Check the created data frames
+ls(pattern = "myanmar_sf_")
 ```
 
+we do this so that we have lesser data to work with for each data frame, making it faster overall
+
+## **Converting myanmar_sf frame to sp’s Spatial\* class**
+
+since we have 10 quarters to convert, instead of converting all one by one, i will use a for-each loop to convert them in one go
+
 ```{r}
-# Display KDE for the first quarter as an example
-plot(kde_list[[1]], main = paste("KDE for Quarter:", quarters[1]))
+myanmar_sfs <- ls(pattern = "^myanmar_sf_")
+
+# Loop through each of these data frames and convert to Spatial objects
+for (df_name in myanmar_sfs) {
+  df <- get(df_name)
+  sp_object <- as_Spatial(df)
+  sp_name <- gsub("sf", "sp", df_name)
+  assign(sp_name, sp_object)
+}
+
+myanmar_sps <- ls(pattern = "myanmar_sp_")
+myanmar_sps
+```
+
+## Display one quarter to check
+
+```{r}
+myanmar_sp_2021_Q1
 ```
 
 ## **Converting the generic sp format into spatstat’s ppp format**
 
 ```{r}
-acled_myanmar_ppp <- as.ppp(acled_sf)
-acled_myanmar_ppp
+for (df_name in myanmar_sfs) {
+  df <- get(df_name)
+  # Convert to ppp object
+  ppp_object <- as.ppp(df)
+  
+  # Create a name for the new ppp object
+  ppp_name <- gsub("sf", "ppp", df_name)
+  
+  # Assign the ppp object to a variable with the new name
+  assign(ppp_name, ppp_object)
+}
+myanmar_ppps <- ls(pattern = "myanmar_ppp_")
+myanmar_ppps
 ```
 
 ```{r}
-plot(acled_myanmar_ppp)
+myanmar_ppp_2021_Q1
+plot(myanmar_ppp_2023_Q3)
 ```
 
 ```{r}
-summary(acled_myanmar_ppp)
+plot(myanmar_ppp)
 ```
 
 ```{r}
-any(duplicated(acled_myanmar_ppp))
+summary(myanmar_ppp_2023_Q4)
 ```
 
 ```{r}
-sum(multiplicity(acled_myanmar_ppp) > 1)
+any(duplicated(myanmar_ppp_2021_Q1))
+```
+
+```{r}
+sum(multiplicity(myanmar_ppp_2021_Q1) > 1)
+```
+
+### **Creating *owin* objects**
+
+```{r}
+for (df_name in myanmar_sfs) {
+  ppp_name <- gsub("sf", "ppp", df_name)
+  ppp_object <- get(ppp_name)
+  owin_object <- as.owin(ppp_object)
+  owin_name <- gsub("sf", "owin", df_name)
+  assign(owin_name, owin_object)
+}
+ls(pattern = "myanmar_owin_")
+```
+
+```{r}
+plot(myanmar_owin_2021_Q1)
+```
+
+```{r}
+summary(myanmar_owin_2021_Q1)
 ```
 
 # Second-order Spatial Point Patterns Analysis
@@ -287,42 +348,4 @@ plot(density(acled_myanmar_ppp.km,
              edge=TRUE, 
              kernel="disc"), 
      main="Disc")
-```
-
-## G-Function Estimation and CSR Test
-
-```{r}
-
-G_conflict = Gest(acled_myanmar_ppp.km, correction = "border")
-plot(G_conflict, main = "G-Function Estimation")
-
-# Monte Carlo simulation test using G-function
-G_conflict_csr <- envelope(acled_myanmar_ppp.km, Gest, nsim = 999)
-plot(G_conflict_csr, main = "Monte Carlo Simulation - G-Function")
-
-```
-
-## **Fixed and Adaptive KDE**
-
-### **Computing KDE by using fixed bandwidth**
-
-```{r}
-kde_myanmar_600 <- density(childcareSG_ppp.km, sigma=0.6, edge=TRUE, kernel="gaussian")
-plot(kde_myanmar_600)
-```
-
-```{r}
-kde_myanmar_adaptive <- adaptive.density(acled_myanmar_ppp.km, method="kernel")
-plot(kde_myanmar_adaptive)
-```
-
-```{r}
-gridded_kde_myanmar_bw <- as.SpatialGridDataFrame.im(kde_mynamar_bw)
-spplot(gridded_kde_myanmar_bw)
-```
-
-#### Converting gridded output into raster
-
-```{r}
-kde_myanmar_bw_raster <- raster(kde_mynamar_bw)
 ```

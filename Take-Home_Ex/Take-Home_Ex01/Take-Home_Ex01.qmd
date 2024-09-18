@@ -129,17 +129,32 @@ since the iso, country and region will definitely be the same for the entire dat
 acled_sf <- acled_sf %>% dplyr::select(-c("iso", "region", "country", "notes"))
 ```
 
+Double check if the columns are removed
+
 ```{r}
 colnames(acled_sf)
 ```
 
 ```{r}
+adm0_polygons <- st_collection_extract(adm0, "POLYGON")
+adm2_polygons <- st_collection_extract(adm2, "POLYGON")
+adm3_polygons <- st_collection_extract(adm3, "POLYGON")
+```
+
+```{r}
 tmap_mode('plot') # interactive view
+
 acled_sf %>% filter(year == 2023 |
-                      event_type == 'Political Violence') %>%
-  tm_shape() + 
-  tm_dots()
-# tmap_mode('plot') # static view
+                      event_type == 'Political Violence')
+
+tm_shape(adm2_polygons) + 
+  tm_borders(col = "green") + 
+tm_shape(adm3_polygons) +
+  tm_borders(col = "black") +
+tm_shape(adm0) + 
+  tm_dots(col = "blue", size = 0.1) + 
+tm_shape(acled_sf) + 
+  tm_dots(col = "red", size = 0.1) # Plot the conflict data points in red
 ```
 
 ## Convert acled_sf into their various quarters (10 in total)
@@ -222,10 +237,6 @@ plot(myanmar_ppp_2023_Q3)
 ```
 
 ```{r}
-plot(myanmar_ppp)
-```
-
-```{r}
 summary(myanmar_ppp_2023_Q4)
 ```
 
@@ -251,7 +262,7 @@ ls(pattern = "myanmar_owin_")
 ```
 
 ```{r}
-plot(myanmar_owin_2021_Q1)
+plot(myanmar_owin_2021_Q4)
 ```
 
 ```{r}
@@ -302,7 +313,7 @@ bw.diggle(acled_myanmar_ppp.km)
 ```
 
 | Function  | Methodology                                | Advantages                                      | Limitations                                          |
-|-----------|--------------------------------------------|-------------------------------------------------|------------------------------------------------------|
+|------------------|------------------|------------------|-------------------|
 | bw.CvL    | Least Squares Cross-Validation             | Data-driven, adaptive                           | Computationally intensive, sensitive to outliers     |
 | bw.scott  | Scott’s Rule of Thumb                      | Simple, quick                                   | Assumes Gaussian distribution, non-adaptive          |
 | bw.ppl    | Penalized Profile Likelihood               | Balances fit and smoothness, flexible           | Complex, requires penalty parameter tuning           |

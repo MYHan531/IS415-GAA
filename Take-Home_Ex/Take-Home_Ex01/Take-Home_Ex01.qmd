@@ -136,7 +136,7 @@ colnames(acled_sf)
 ```
 
 ```{r}
-adm0_polygons <- st_collection_extract(adm0, "POLYGON")
+# adm0_polygons <- st_collection_extract(adm0, "POLYGON")
 adm2_polygons <- st_collection_extract(adm2, "POLYGON")
 adm3_polygons <- st_collection_extract(adm3, "POLYGON")
 ```
@@ -271,27 +271,88 @@ summary(myanmar_owin_2021_Q1)
 
 # Second-order Spatial Point Patterns Analysis
 
-## Computing kernel density estimation using automatic bandwidth selection method
+### **G-Function Analysis**
+
+The G-function measures the distribution of the distances from an arbitrary event to its nearest event.
 
 ```{r}
-kde_mynamar_bw <- density(acled_myanmar_ppp, sigma=bw.diggle, edge=TRUE,
-                          kernel="gaussian")
-plot(kde_mynamar_bw)
+# Loop through each quarterly ppp object to compute G-function
+for (ppp_name in myanmar_ppps) {
+  # Get the ppp object
+  ppp_object <- get(ppp_name)
+  
+  # Compute G-function estimation
+  G <- Gest(ppp_object, correction = "border")
+  
+  # Plot the G-function
+  plot(G, xlim = c(0, 500), main = paste("G-Function for", ppp_name))
+  
+  # Perform Monte Carlo test with G-function
+  G_csr <- envelope(ppp_object, Gest, nsim = 999)
+  
+  # Plot the Monte Carlo test results
+  plot(G_csr, main = paste("CSR Test - G-Function for", ppp_name))
+}
+
 ```
 
+### **F-Function Analysis**
+
+The F-function estimates the empty space function F(r) from a point pattern in an arbitrary window shape.
+
 ```{r}
-# bw is short form of Bandwidth
-bw <- bw.diggle(acled_myanmar_ppp)
-bw
+# Loop through each quarterly ppp object to compute F-function
+for (ppp_name in myanmar_ppps) {
+  # Get the ppp object
+  ppp_object <- get(ppp_name)
+  
+  # Compute F-function estimation
+  F <- Fest(ppp_object)
+  
+  # Plot the F-function
+  plot(F, main = paste("F-Function for", ppp_name))
+  F_csr <- envelope(ppp_object, Fest, nsim = 999)
+  
+
+  plot(F_csr, main = paste("CSR Test - F-Function for", ppp_name))
+}
 ```
 
-#### Rescalling KDE values
+### **K-Function Analysis**
+
+The K-function measures the number of events found up to a given distance of any particular event.
 
 ```{r}
-acled_myanmar_ppp.km <- rescale.ppp(acled_myanmar_ppp, 1000, "km")
-kde_mynamar_bw <- density(acled_myanmar_ppp, sigma=bw.diggle, edge=TRUE,
-                          kernel="gaussian")
-plot(kde_mynamar_bw)
+# Loop through each quarterly ppp object to compute K-function
+for (ppp_name in myanmar_ppps) {
+  ppp_object <- get(ppp_name)
+  K <- Kest(ppp_object, correction = "Ripley")
+
+  plot(K, . -r ~ r, ylab = "K(d)-r", xlab = "d(m)", main = paste("K-Function for", ppp_name))
+  K_csr <- envelope(ppp_object, Kest, nsim = 99, rank = 1, glocal = TRUE)
+  plot(K_csr, . - r ~ r, xlab = "d", ylab = "K(d)-r", main = paste("CSR Test - K-Function for", ppp_name))
+}
+```
+
+### **L-Function Analysis**
+
+The L-function is a linearized version of the K-function, making interpretation easier.
+
+```{r}
+# Loop through each quarterly ppp object to compute L-function
+for (ppp_name in myanmar_ppps) {
+  # Get the ppp object
+  ppp_object <- get(ppp_name)
+  
+  G <- Gest(ppp_object, correction = "border")
+  
+  plot(G, xlim = c(0, 500), main = paste("G-Function for", ppp_name))
+  
+  G_csr <- envelope(ppp_object, Gest, nsim = 999)
+  
+  plot(G_csr, main = paste("CSR Test - G-Function for", ppp_name))
+}
+
 ```
 
 ### **Different Automatic Bandwidth Methods**
@@ -359,4 +420,63 @@ plot(density(acled_myanmar_ppp.km,
              edge=TRUE, 
              kernel="disc"), 
      main="Disc")
+```
+
+# Deriving quarterly spatio-temporal KDE layers
+
+### Creating `ppp` Objects with Time Marks
+
+To perform spatio-temporal analysis, we need to create new `ppp` objects that include a temporal component. For this case, we'll use the disorder type as the temporal mark.
+
+```{r}
+# myanmar_quarter <- myanmar_sf %>% 
+#   dplyr::select()
+
+```
+
+```{r}
+
+for (df_name in myanmar_sfs) {
+
+  df <- get(df_name)
+  # Create a quarter numeric mark
+  df <- df %>%
+    mutate(Quarter_num = as.numeric(gsub(".*Q", "", quarter)))
+  
+  # Convert to ppp object with Quarter_num as the mark
+  ppp_object <- as.ppp(df %>% dplyr::select(Quarter_num))
+  
+  # Assign the ppp object to a variable
+  assign(gsub("sf", "ppp_temp", df_name), ppp_object)
+}
+myanmar_ppps2 = ls(pattern = "myanmar_ppp_temp")
+```
+
+### Computing Spatio-Temporal KDE
+
+Now, let's use `sparr::spattemp.density()` to compute the spatio-temporal kernel density estimation for each quarterly dataset.
+
+```{r}
+# List to store KDE results
+kde_results <- list()
+
+# Loop through each quarterly ppp object to compute spatio-temporal KDE
+for (ppp_name in myanmar_ppps2) {
+  
+  ppp_object <- get(ppp_name)
+  
+  # Ensure the temporal mark is numeric
+  if (!is.numeric(marks(ppp_object))) {
+    stop("Temporal mark in the ppp object must be numeric.")
+  }
+  
+  # Compute spatio-temporal KDE
+  st_kde <- spattemp.density(ppp_object)
+  
+  # Store the KDE result in a list
+  kde_results[[ppp_name]] <- st_kde
+  
+  # Plot the spatio-temporal KDE for the current quarter
+  plot(st_kde, main = paste("ST-KDE for", ppp_name))
+}
 ```

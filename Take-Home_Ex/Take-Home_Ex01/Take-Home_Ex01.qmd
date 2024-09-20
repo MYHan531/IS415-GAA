@@ -108,6 +108,7 @@ acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
            crs = 4326) %>%
   st_transform(crs = 32647) %>%
     mutate(event_date = dmy(event_date))
+#acled_sf <- acled_sf %>% dplyr::filter(event_type == "Political Violence")
 adm0 <- st_read("data/myanmar/geonode-mmr_polbnda_adm0_250k_mimu_1.kml")
 adm2 <- st_read("data/myanmar/geonode-mmr_polbnda_adm2_250k_mimu.kml")
 adm3 <- st_read("data/myanmar/geonode-mmr_polbnda_adm3_250k_mimu_1.kml")
@@ -145,7 +146,7 @@ adm3_polygons <- st_collection_extract(adm3, "POLYGON")
 tmap_mode('plot') # interactive view
 
 acled_sf %>% filter(year == 2023 |
-                      event_type == 'Political Violence')
+                      event_type == 'Battles')
 
 tm_shape(adm2_polygons) + 
   tm_borders(col = "green") + 
@@ -155,6 +156,22 @@ tm_shape(adm0) +
   tm_dots(col = "blue", size = 0.1) + 
 tm_shape(acled_sf) + 
   tm_dots(col = "red", size = 0.1) # Plot the conflict data points in red
+```
+
+### Save data into the rds folder
+
+We do this so that we do not need to re-run the previous codes, to keep the derived data in a .rds file
+
+```{r}
+# | eval: false
+write_rds(acled_sf, "data/rds/acled_sf.rds") # keep in tibble format
+```
+
+### To read back the data, (if we do not have it in our environment yet)
+
+```{r}
+#| echo: false # this allows user to not see the code output lines, but it is still running
+acled_sf <- read_rds("data/rds/acled_sf.rds")
 ```
 
 ## Convert acled_sf into their various quarters (10 in total)
@@ -168,25 +185,55 @@ myanmar_sf <- acled_sf %>%
 
 ### Extract into various data frames based on the quarters
 
+we do this so that we have lesser data to work with for each data frame, making it faster overall
+
+### Split the quarters based on the event_type in the myanmar_sf data frames
+
 ```{r}
 # Get all quarters from the data
 unique_quarters <- unique(myanmar_sf$quarter)
+event_types <- c("Battles", "Strategic Developments", "Violence against civilians", "Explosions/Remote violence")
 
-# Loop through each unique quarter and create separate data frames
+# Loop through each quarter and event type
 for (q in unique_quarters) {
-  # Create a filtered data frame for the current quarter
-  df <- myanmar_sf %>% filter(quarter == q)
-  df_name <- paste0("myanmar_sf_", gsub(" ", "_", q))
   
-  # Assign the data frame to a variable with the generated name
-  assign(df_name, df)
+  # Filter the data for the current quarter
+  df_quarter <- myanmar_sf %>% filter(quarter == q)
+  
+  # Loop through each event type within the current quarter
+  for (event in event_types) {
+    
+    # Filter the data for the current event type
+    df_event <- df_quarter %>% filter(event_type == event)
+    
+    # Create a dynamic name for the data frame
+    df_name <- paste0("myanmar_sf_", gsub(" ", "_", q), "_", gsub("/", "", gsub(" ", "_", event)))
+    
+    # Assign the data frame to a variable with the generated name
+    assign(df_name, df_event)
+  }
 }
 
 # Check the created data frames
 ls(pattern = "myanmar_sf_")
 ```
 
-we do this so that we have lesser data to work with for each data frame, making it faster overall
+```{r}
+old_quarter_dfs <- ls(pattern = "^myanmar_sf_\\d{4}_Q\\d$")
+
+# Remove the old quarterly data frames
+rm(list = old_quarter_dfs)
+all_dfs <- ls(pattern = "^myanmar_sf_")
+
+# Loop through each data frame and remove those with 0 rows
+for (df_name in all_dfs) {
+  df <- get(df_name)
+  if (nrow(df) == 0) {
+    rm(list = df_name)
+  }
+}
+myanmar_sfs <- ls(pattern = "myanmar_sf_")
+```
 
 ## **Converting myanmar_sf frame to sp’s Spatial\* class**
 
@@ -358,7 +405,7 @@ for (ppp_name in myanmar_ppps) {
 ### **Different Automatic Bandwidth Methods**
 
 ```{r}
-bw.CvL(acled_myanmar_ppp.km)
+bw.CvL(myanmar_ppp)
 ```
 
 ```{r}

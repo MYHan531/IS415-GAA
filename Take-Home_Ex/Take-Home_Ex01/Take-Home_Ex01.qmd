@@ -174,7 +174,7 @@ write_rds(acled_sf, "data/rds/acled_sf.rds") # keep in tibble format
 acled_sf <- read_rds("data/rds/acled_sf.rds")
 ```
 
-## Convert acled_sf into their various quarters (10 in total)
+## Convert acled_sf into their various quarters (14 in total)
 
 ```{r}
 # Convert event_date to quarters for quarterly analysis, shift quarter to 4th column for easier reference
@@ -192,31 +192,33 @@ we do this so that we have lesser data to work with for each data frame, making 
 ```{r}
 # Get all quarters from the data
 unique_quarters <- unique(myanmar_sf$quarter)
-event_types <- c("Battles", "Strategic Developments", "Violence against civilians", "Explosions/Remote violence")
+event_types <- c(
+  "Battles" = "b",
+  "Strategic developments" = "sd",
+  "Violence against civilians" = "vac",
+  "Explosions/Remote violence" = "erv"
+)
 
-# Loop through each quarter and event type
 for (q in unique_quarters) {
   
-  # Filter the data for the current quarter
   df_quarter <- myanmar_sf %>% filter(quarter == q)
   
-  # Loop through each event type within the current quarter
-  for (event in event_types) {
-    
-    # Filter the data for the current event type
+  for (event in names(event_types)) {
     df_event <- df_quarter %>% filter(event_type == event)
     
-    # Create a dynamic name for the data frame
-    df_name <- paste0("myanmar_sf_", gsub(" ", "_", q), "_", gsub("/", "", gsub(" ", "_", event)))
+    # for debugging:
+    #print(paste0("Processing quarter: ", q, ", event: ", event, " - Rows: ", nrow(df_event)))
     
-    # Assign the data frame to a variable with the generated name
+    df_name <- paste0("myanmar_sf_", gsub(" ", "_", q), "_", event_types[[event]])
+    
     assign(df_name, df_event)
   }
 }
 
-# Check the created data frames
 ls(pattern = "myanmar_sf_")
 ```
+
+Since I have split the data frames into their respective year, quarter and categories, i will remove the original quarter only data frames and also remove all the empty data frames (0 rows.)
 
 ```{r}
 old_quarter_dfs <- ls(pattern = "^myanmar_sf_\\d{4}_Q\\d$")
@@ -237,7 +239,7 @@ myanmar_sfs <- ls(pattern = "myanmar_sf_")
 
 ## **Converting myanmar_sf frame to sp’s Spatial\* class**
 
-since we have 10 quarters to convert, instead of converting all one by one, i will use a for-each loop to convert them in one go
+since we have 14 quarters to convert, instead of converting all one by one, i will use a for-each loop to convert them in one code chunk
 
 ```{r}
 myanmar_sfs <- ls(pattern = "^myanmar_sf_")
@@ -256,8 +258,10 @@ myanmar_sps
 
 ## Display one quarter to check
 
+In this case i used myanmar_sp_2023_Q3_sd
+
 ```{r}
-myanmar_sp_2021_Q1
+myanmar_sp_2023_Q3_sd
 ```
 
 ## **Converting the generic sp format into spatstat’s ppp format**
@@ -279,20 +283,20 @@ myanmar_ppps
 ```
 
 ```{r}
-myanmar_ppp_2021_Q1
-plot(myanmar_ppp_2023_Q3)
+myanmar_ppp_2023_Q3_b
+plot(myanmar_ppp_2023_Q3_b)
 ```
 
 ```{r}
-summary(myanmar_ppp_2023_Q4)
+summary(myanmar_ppp_2023_Q3_b)
 ```
 
 ```{r}
-any(duplicated(myanmar_ppp_2021_Q1))
+any(duplicated(myanmar_ppp_2023_Q3_b))
 ```
 
 ```{r}
-sum(multiplicity(myanmar_ppp_2021_Q1) > 1)
+sum(multiplicity(myanmar_ppp_2023_Q3_b) > 1)
 ```
 
 ### **Creating *owin* objects**
@@ -309,11 +313,11 @@ ls(pattern = "myanmar_owin_")
 ```
 
 ```{r}
-plot(myanmar_owin_2021_Q4)
+plot(myanmar_owin_2024_Q1_vac)
 ```
 
 ```{r}
-summary(myanmar_owin_2021_Q1)
+summary(myanmar_owin_2024_Q1_vac)
 ```
 
 # Second-order Spatial Point Patterns Analysis
@@ -404,20 +408,22 @@ for (ppp_name in myanmar_ppps) {
 
 ### **Different Automatic Bandwidth Methods**
 
+Using myanmar_ppp_2021_Q1_Strategic_developments to show case the sigma values for the automatic Bandwidth methods.
+
 ```{r}
-bw.CvL(myanmar_ppp)
+bw.CvL(myanmar_ppp_2021_Q1_sd)
 ```
 
 ```{r}
-bw.scott(acled_myanmar_ppp.km)
+bw.scott(myanmar_ppp_2021_Q1_sd)
 ```
 
 ```{r}
-bw.ppl(acled_myanmar_ppp.km)
+bw.ppl(myanmar_ppp_2021_Q1_sd)
 ```
 
 ```{r}
-bw.diggle(acled_myanmar_ppp.km)
+bw.diggle(myanmar_ppp_2021_Q1_sd)
 ```
 
 | Function  | Methodology                                | Advantages                                      | Limitations                                          |
@@ -473,57 +479,460 @@ plot(density(acled_myanmar_ppp.km,
 
 ### Creating `ppp` Objects with Time Marks
 
-To perform spatio-temporal analysis, we need to create new `ppp` objects that include a temporal component. For this case, we'll use the disorder type as the temporal mark.
-
-```{r}
-# myanmar_quarter <- myanmar_sf %>% 
-#   dplyr::select()
-
-```
+To perform spatio-temporal analysis, we need to create new `ppp` objects that include a temporal component. For this case, we'll use the event_type as the temporal mark.
 
 ```{r}
 
-for (df_name in myanmar_sfs) {
+event_type_mapping <- as.numeric(as.factor(myanmar_sf$event_type))
+names(event_type_mapping) <- levels(as.factor(myanmar_sf$event_type))
 
+# Convert quarterly data frames to ppp objects with event_type as the mark
+for (df_name in ls(pattern = "^myanmar_sf_\\d{4}_Q\\d_")) {
   df <- get(df_name)
-  # Create a quarter numeric mark
   df <- df %>%
-    mutate(Quarter_num = as.numeric(gsub(".*Q", "", quarter)))
+    mutate(Event_num = event_type_mapping[as.character(event_type)])
   
-  # Convert to ppp object with Quarter_num as the mark
-  ppp_object <- as.ppp(df %>% dplyr::select(Quarter_num))
+  # Convert to ppp object with Event_num as the mark
+  ppp_object <- as.ppp(df %>% dplyr::select(Event_num))
   
-  # Assign the ppp object to a variable
   assign(gsub("sf", "ppp_temp", df_name), ppp_object)
 }
-myanmar_ppps2 = ls(pattern = "myanmar_ppp_temp")
+
+# Check the created ppp objects
+ls(pattern = "myanmar_ppp_temp")
 ```
 
 ### Computing Spatio-Temporal KDE
 
 Now, let's use `sparr::spattemp.density()` to compute the spatio-temporal kernel density estimation for each quarterly dataset.
 
-```{r}
-# List to store KDE results
-kde_results <- list()
+### Function to convert ppp objects to Kilometers (km)
 
-# Loop through each quarterly ppp object to compute spatio-temporal KDE
-for (ppp_name in myanmar_ppps2) {
+```{r}
+# Function to convert ppp objects to kilometers
+convert_to_km <- function(ppp_object) {
+  print(unitname(ppp_object))
+  ppp_km <- rescale.ppp(ppp_object, s = 1000, unitname = c("km", "km"))
   
+  return(ppp_km)
+}
+```
+
+Apply the conversion function to all myanmar_ppp_temp objects
+
+```{r}
+ppp_temps <- ls(pattern = "myanmar_ppp_temp")
+for (ppp_name in ppp_temps) {
   ppp_object <- get(ppp_name)
   
-  # Ensure the temporal mark is numeric
-  if (!is.numeric(marks(ppp_object))) {
-    stop("Temporal mark in the ppp object must be numeric.")
+  # Convert the ppp object to kilometers
+  ppp_km <- convert_to_km(ppp_object)
+  assign(gsub("temp", "temp_km", ppp_name), ppp_km)
+}
+ls(pattern = "myanmar_ppp_temp_km")
+```
+
+remove all previous ppp_temp data frames
+
+```{r}
+
+all_ppp_objects <- ls(pattern = "^myanmar_ppp_temp_")
+non_km_objects <- all_ppp_objects[!grepl("_km_", all_ppp_objects)]
+rm(list = non_km_objects)
+ls(pattern = "^myanmar_ppp_temp_")
+
+```
+
+List the ppp files into lists based on their event type:
+
+```{r}
+b_ppp_list <- list()       # Battles
+erv_ppp_list <- list()     # Explosions/Remote Violence
+vac_ppp_list <- list()     # Violence Against Civilians
+sd_ppp_list <- list()      # Strategic Developments
+
+ppp_object_names <- ls(pattern = "^myanmar_ppp_temp_km_")
+
+for (ppp_name in ppp_object_names) {
+  ppp_object <- get(ppp_name)
+  
+  if (grepl("b", ppp_name)) {
+    b_ppp_list[[ppp_name]] <- ppp_object
+  } else if (grepl("erv", ppp_name)) {
+    erv_ppp_list[[ppp_name]] <- ppp_object
+  } else if (grepl("vac", ppp_name)) {
+    vac_ppp_list[[ppp_name]] <- ppp_object
+  } else if (grepl("sd", ppp_name)) {
+    sd_ppp_list[[ppp_name]] <- ppp_object
+  }
+}
+
+length(b_ppp_list)
+length(erv_ppp_list)
+length(vac_ppp_list)
+length(sd_ppp_list)
+```
+
+### Helper Function
+
+You can now use this helper function in your context for each event type (`violence_civilians`, `explosions_remote_violence`, `strat_devs`, `battles`). Below is how you can set it up for each category with the appropriate `ppp_km` objects.
+
+```{r}
+combine_ppp_with_owin <- function(ppp_name, ppp_object) {
+  # Extract the relevant part of the name to match the owin object
+  owin_name <- gsub("ppp_temp_km", "owin", ppp_name)
+  
+  # Get the corresponding owin object
+  owin_object <- get(owin_name)
+  
+  # Combine the ppp object with the corresponding owin window
+  combined_ppp <- ppp_object[owin_object]
+  
+  return(combined_ppp)
+}
+
+plot_combined_ppp <- function(combined_ppp, main_title = "Combined PPP Plot") {
+  # Plot the ppp object with title
+  plot(combined_ppp, main = main_title)
+}
+
+# Helper function to compute the spatial KDE for ppp objects
+compute_kde <- function(ppp_object, sigma_value = 1000) {
+  # Compute the KDE using a Gaussian kernel
+  kde_result <- density.ppp(ppp_object, sigma = sigma_value, edge = TRUE)
+  return(kde_result)
+}
+```
+
+### Loop Through Each Event Type List and Compute KDE
+
+Next, We will loop through each event type list (`b_ppp_list`, `erv_ppp_list`, `vac_ppp_list`, `sd_ppp_list`) and compute the KDE layers for each `ppp` object.
+
+```{r}
+sigma_value <- 10
+
+# Battles
+b_kde_list <- list()
+for (ppp_name in names(b_ppp_list)) {
+  kde_result <- compute_kde(b_ppp_list[[ppp_name]], sigma_value)
+  b_kde_list[[ppp_name]] <- kde_result
+}
+
+# Explosions/Remote Violence
+erv_kde_list <- list()
+for (ppp_name in names(erv_ppp_list)) {
+  kde_result <- compute_kde(erv_ppp_list[[ppp_name]], sigma_value)
+  erv_kde_list[[ppp_name]] <- kde_result
+}
+
+# Violence Against Civilians
+vac_kde_list <- list()
+for (ppp_name in names(vac_ppp_list)) {
+  kde_result <- compute_kde(vac_ppp_list[[ppp_name]], sigma_value)
+  vac_kde_list[[ppp_name]] <- kde_result
+}
+
+# Strategic Developments
+sd_kde_list <- list()
+for (ppp_name in names(sd_ppp_list)) {
+  kde_result <- compute_kde(sd_ppp_list[[ppp_name]], sigma_value)
+  sd_kde_list[[ppp_name]] <- kde_result
+}
+```
+
+```{r}
+for (ppp_name in names(b_ppp_list)) {
+  combined_b_ppp <- combine_ppp_with_owin(ppp_name, b_ppp_list[[ppp_name]])
+  plot_combined_ppp(combined_b_ppp, main_title = paste("Battles:", ppp_name))
+}
+
+# Explosions/Remote Violence
+for (ppp_name in names(erv_ppp_list)) {
+  combined_erv_ppp <- combine_ppp_with_owin(ppp_name, erv_ppp_list[[ppp_name]])
+  plot_combined_ppp(combined_erv_ppp, main_title = paste("Explosions/Remote Violence:", ppp_name))
+}
+
+# Violence Against Civilians
+for (ppp_name in names(vac_ppp_list)) {
+  combined_vac_ppp <- combine_ppp_with_owin(ppp_name, vac_ppp_list[[ppp_name]])
+  plot_combined_ppp(combined_vac_ppp, main_title = paste("Violence Against Civilians:", ppp_name))
+}
+
+# Strategic Developments
+for (ppp_name in names(sd_ppp_list)) {
+  combined_sd_ppp <- combine_ppp_with_owin(ppp_name, sd_ppp_list[[ppp_name]])
+  plot_combined_ppp(combined_sd_ppp, main_title = paste("Strategic Developments:", ppp_name))
+}
+```
+
+#### Spatio-Temporal KDE Helper Function
+
+helper function to compute spatio-temporal KDE using the `sparr::spattemp.density` function, where we can specify the spatial (`h`) and temporal (`lambda`) bandwidths.
+
+```{r}
+quarter_time_mapping <- list(
+  "2021_Q1" = 1,
+  "2021_Q2" = 2,
+  "2021_Q3" = 3,
+  "2021_Q4" = 4,
+  "2022_Q1" = 5,
+  "2022_Q2" = 6,
+  "2022_Q3" = 7,
+  "2022_Q4" = 8,
+  "2023_Q1" = 9,
+  "2023_Q2" = 10,
+  "2023_Q3" = 11,
+  "2023_Q4" = 12,
+  "2024_Q1" = 13,
+  "2024_Q2" = 14
+)
+
+
+assign_temporal_marks <- function(ppp_object, quarter_string) {
+  if (quarter_string %in% names(quarter_time_mapping)) {
+    base_time_mark <- quarter_time_mapping[[quarter_string]]
+    num_points <- npoints(ppp_object)
+    time_variation <- runif(num_points, min = 0, max = 0.25)  # 
+
+    ppp_object$marks <- base_time_mark + time_variation
+  } else {
+    stop("Quarter string not found in mapping")
+  }
+  return(ppp_object)
+}
+
+
+
+compute_spatio_temporal_kde <- function(ppp_object, h_value = 1000, lambda_value = 1) {
+  # Ensure that the temporal marks exist and are numeric
+  if (is.numeric(ppp_object$marks)) {
+    time_range <- range(ppp_object$marks)
+    print(time_range[1])
+    print(time_range[2])
+    
+    # Ensure tlim is valid (tlim[1] < tlim[2])
+    if (time_range[1] < time_range[2]) {
+      kde_result <- spattemp.density(ppp_object, h = h_value, lambda = lambda_value, tlim = time_range)
+      return(kde_result)
+    } else {
+      stop("Invalid temporal range: tlim[1] must be < tlim[2]")
+    }
+  } else {
+    stop("Temporal marks are not numeric in the ppp object.")
+  }
+}
+```
+
+```{r}
+combine_ppp_quarters <- function(ppp_list, quarter_labels) {
+  all_points <- NULL
+  for (i in seq_along(ppp_list)) {
+    ppp_object <- ppp_list[[i]]
+    
+    x_coords <- ppp_object$x
+    y_coords <- ppp_object$y
+    n_points <- npoints(ppp_object)
+    
+    time_marks <- rep(quarter_labels[i], n_points)
+    
+    points_matrix <- cbind(x_coords, y_coords, time_marks)
+    
+
+    all_points <- rbind(all_points, points_matrix)
   }
   
-  # Compute spatio-temporal KDE
-  st_kde <- spattemp.density(ppp_object)
+
+  combined_ppp <- ppp(all_points[, 1], all_points[, 2], marks = all_points[, 3], 
+                      window = ppp_list[[1]]$window, unitname = ppp_list[[1]]$unitname)
   
-  # Store the KDE result in a list
-  kde_results[[ppp_name]] <- st_kde
-  
-  # Plot the spatio-temporal KDE for the current quarter
-  plot(st_kde, main = paste("ST-KDE for", ppp_name))
+  return(combined_ppp)
 }
+
+
+quarter_labels <- c(1, 2, 3, 4) 
+```
+
+```{r}
+b_ppp_list <- list(
+  "myanmar_ppp_temp_km_2021_Q1_b" = get("myanmar_ppp_temp_km_2021_Q1_b"),
+  "myanmar_ppp_temp_km_2021_Q2_b" = get("myanmar_ppp_temp_km_2021_Q2_b"),
+  "myanmar_ppp_temp_km_2021_Q3_b" = get("myanmar_ppp_temp_km_2021_Q3_b"),
+  "myanmar_ppp_temp_km_2021_Q4_b" = get("myanmar_ppp_temp_km_2021_Q4_b")
+)
+erv_ppp_list <- list(
+  "myanmar_ppp_temp_km_2021_Q1_erv" = get("myanmar_ppp_temp_km_2021_Q1_erv"),
+  "myanmar_ppp_temp_km_2021_Q2_erv" = get("myanmar_ppp_temp_km_2021_Q2_erv"),
+  "myanmar_ppp_temp_km_2021_Q3_erv" = get("myanmar_ppp_temp_km_2021_Q3_erv"),
+  "myanmar_ppp_temp_km_2021_Q4_erv" = get("myanmar_ppp_temp_km_2021_Q4_erv")
+)
+
+sd_ppp_list <- list(
+  "myanmar_ppp_temp_km_2021_Q1_sd" = get("myanmar_ppp_temp_km_2021_Q1_sd"),
+  "myanmar_ppp_temp_km_2021_Q2_sd" = get("myanmar_ppp_temp_km_2021_Q2_sd"),
+  "myanmar_ppp_temp_km_2021_Q3_sd" = get("myanmar_ppp_temp_km_2021_Q3_sd"),
+  "myanmar_ppp_temp_km_2021_Q4_sd" = get("myanmar_ppp_temp_km_2021_Q4_sd")
+)
+
+vac_ppp_list <- list(
+  "myanmar_ppp_temp_km_2021_Q1_vac" = get("myanmar_ppp_temp_km_2021_Q1_vac"),
+  "myanmar_ppp_temp_km_2021_Q2_vac" = get("myanmar_ppp_temp_km_2021_Q2_vac"),
+  "myanmar_ppp_temp_km_2021_Q3_vac" = get("myanmar_ppp_temp_km_2021_Q3_vac"),
+  "myanmar_ppp_temp_km_2021_Q4_vac" = get("myanmar_ppp_temp_km_2021_Q4_vac")
+)
+
+
+# Combine them and assign temporal marks
+combined_b_ppp <- combine_ppp_quarters(b_ppp_list, quarter_labels)
+kde_result_b <- spattemp.density(combined_b_ppp, h = 1000, lambda = 2)
+plot(kde_result_b)
+# Combine and compute KDE for Explosions/Remote Violence
+combined_erv_ppp <- combine_ppp_quarters(erv_ppp_list, quarter_labels)
+kde_result_erv <- spattemp.density(combined_erv_ppp, h = 1000, lambda = 2)
+plot(kde_result_erv)
+
+# Combine and compute KDE for Strategic Developments
+combined_sd_ppp <- combine_ppp_quarters(sd_ppp_list, quarter_labels)
+kde_result_sd <- spattemp.density(combined_sd_ppp, h = 1000, lambda = 2)
+plot(kde_result_sd)
+
+# Combine and compute KDE for Violence Against Civilians
+combined_vac_ppp <- combine_ppp_quarters(vac_ppp_list, quarter_labels)
+kde_result_vac <- spattemp.density(combined_vac_ppp, h = 1000, lambda = 2)
+plot(kde_result_vac)
+```
+
+```{r}
+
+helper_func_plot_kde_list <- function(kde_list, xlab = "Distance (km)", ylab = "Density") {
+  for (name in names(kde_list)) {
+    plot(kde_list[[name]], main = name, xlab = xlab, ylab = ylab)
+  }
+} 
+  
+kde_list_battles <- list()
+kde_list_erv <- list()
+kde_list_sd <- list()
+kde_list_vac <- list()
+
+# Combine and compute KDE for Battles
+combined_b_ppp <- combine_ppp_quarters(b_ppp_list, quarter_labels)
+kde_list_battles$Battles <- spattemp.density(combined_b_ppp, h = 1000, lambda = 2)
+
+# Combine and compute KDE for Explosions/Remote Violence
+combined_erv_ppp <- combine_ppp_quarters(erv_ppp_list, quarter_labels)
+kde_list_erv$ExplosionsRemoteViolence <- spattemp.density(combined_erv_ppp, h = 1000, lambda = 2)
+
+# Combine and compute KDE for Strategic Developments
+combined_sd_ppp <- combine_ppp_quarters(sd_ppp_list, quarter_labels)
+kde_list_sd$StrategicDevelopments <- spattemp.density(combined_sd_ppp, h = 1000, lambda = 2)
+
+# Combine and compute KDE for Violence Against Civilians
+combined_vac_ppp <- combine_ppp_quarters(vac_ppp_list, quarter_labels)
+kde_list_vac$ViolenceAgainstCivilians <- spattemp.density(combined_vac_ppp, h = 1000, lambda = 2)
+
+# Now use the helper_func_plot_kde_list for each event type
+
+# Plot Battles KDE
+helper_func_plot_kde_list(kde_list_battles, xlab = "Distance (km)", ylab = "Density")
+
+# Plot Explosions/Remote Violence KDE
+helper_func_plot_kde_list(kde_list_erv, xlab = "Distance (km)", ylab = "Density")
+
+# Plot Strategic Developments KDE
+helper_func_plot_kde_list(kde_list_sd, xlab = "Distance (km)", ylab = "Density")
+
+# Plot Violence Against Civilians KDE
+helper_func_plot_kde_list(kde_list_vac, xlab = "Distance (km)", ylab = "Density")
+```
+
+## **2nd-order spatial point pattern analysis**
+
+On **spatial-temporal KDE layers**, typically i would use computing functions like the **Ripley’s K-function** or **L-function**. These functions help identify clustering patterns over different spatial scales.
+
+Given that I'm working with **spatio-temporal KDE layers**, to conduct **2nd-order spatial point pattern analysis,** i will use `spatstat` functions on my earlier KDE results.
+
+### Steps:
+
+1.  **Convert KDE layers to spatial point patterns**.
+
+2.  **Compute Ripley’s K-function (Kest)** or L-function (Lest).
+
+3.  **Plot the results to observe clustering or dispersion**.
+
+### Compute using K-function and/or L-function
+
+```{r}
+
+filter_ppp_by_year <- function(ppp_obj, year) {
+  # Extract the year part from marks or events
+  event_years <- marks(ppp_obj)
+  
+  # Filter the ppp object based on the provided year
+  filtered_ppp <- ppp_obj[event_years == year]
+  
+  return(filtered_ppp)
+}
+
+# Helper function for K-function calculation and plotting
+compute_k_function <- function(ppp_obj, years) {
+  k_results <- list()
+  
+  for (year in years) {
+    filtered_ppp <- filter_ppp_by_year(ppp_obj, year)
+    
+    if (npoints(filtered_ppp) > 0) {  # Ensure there's data for that year
+      K_result <- Kest(filtered_ppp, correction = "Ripley")
+      plot(K_result, . - r ~ r, main = paste("K-function for", year), xlim = c(0, 1000))
+      k_results[[as.character(year)]] <- K_result
+    }
+  }
+  
+  return(k_results)
+}
+# Helper function for L-function calculation and plotting
+compute_l_function <- function(ppp_obj, years) {
+  l_results <- list()
+  
+  for (year in years) {
+    filtered_ppp <- filter_ppp_by_year(ppp_obj, year)
+    
+    if (npoints(filtered_ppp) > 0) {  # Ensure there's data for that year
+      L_result <- Lest(filtered_ppp, correction = "Ripley")
+      plot(L_result, . - r ~ r, main = paste("L-function for", year), xlim = c(0, 1000))
+      l_results[[as.character(year)]] <- L_result
+    }
+  }
+  
+  return(l_results)
+}
+```
+
+```{r}
+years_to_analyze <- c(2021, 2022, 2023, 2024)
+
+# Battles (combined_b_ppp)
+k_battles_results <- compute_k_function(combined_b_ppp, years_to_analyze)
+l_battles_results <- compute_l_function(combined_b_ppp, years_to_analyze)
+
+# Explosions/Remote Violence (combined_erv_ppp)
+k_erv_results <- compute_k_function(combined_erv_ppp, years_to_analyze)
+l_erv_results <- compute_l_function(combined_erv_ppp, years_to_analyze)
+
+# Strategic Developments (combined_sd_ppp)
+k_sd_results <- compute_k_function(combined_sd_ppp, years_to_analyze)
+l_sd_results <- compute_l_function(combined_sd_ppp, years_to_analyze)
+
+# Violence Against Civilians (combined_vac_ppp)
+k_vac_results <- compute_k_function(combined_vac_ppp, years_to_analyze)
+l_vac_results <- compute_l_function(combined_vac_ppp, years_to_analyze)
+```
+
+### Visualizing the Results
+
+```{r}
+# Plot K-function results for battles by year
+helper_func_plot_kde_list(k_battles_results, xlab = "Distance (km)", ylab = "K(d)-r")
+
+# Plot L-function results for strategic developments by year
+helper_func_plot_kde_list(l_sd_results, xlab = "Distance (km)", ylab = "L(d)-r")
 ```

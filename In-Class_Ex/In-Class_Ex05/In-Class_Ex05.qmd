@@ -28,7 +28,7 @@ pacman::p_load(tmap, sf, tidyverse, spdep, knitr, GWmodel, dplyr)
 ## Import hunan_shapefile
 
 ```{r}
-#| eval: false
+# eval: false
 hunan_sf <- st_read(dsn = "data/geospatial", 
                  layer = "Hunan")
 ```
@@ -36,14 +36,14 @@ hunan_sf <- st_read(dsn = "data/geospatial",
 ## Import hunan2012.csv
 
 ```{r}
-#| eval: false
+# eval: false
 hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
 ```
 
 ## Perform Relational Joins for the 2 Hunan data frames
 
 ```{r}
-#| eval: false # since we will have the rds file, we will not need to run this code again
+# eval: false # since we will have the rds file, we will not need to run this code again
 #| 
 # all of hunan_sf plus any similar colnames from hunan2012
 hunan_sf <- left_join(hunan_sf,hunan2012) %>% 
@@ -55,7 +55,7 @@ hunan_sf <- left_join(hunan_sf,hunan2012) %>%
 We do this so that we do not need to re-run the previous codes, to keep the derived data in a .rds file
 
 ```{r}
-#| eval: false
+# eval: false
 write_rds(hunan_sf, "data/rds/hunan_sf.rds") # keep in tibble format
 ```
 
@@ -63,7 +63,7 @@ write_rds(hunan_sf, "data/rds/hunan_sf.rds") # keep in tibble format
 
 ```{r}
 #| echo: false # this allows user to not see the code output lines, but it is still running
-hunan_sf <- read_rds("data/rds/hunan_sf.rds")
+# hunan_sf <- read_rds("data/rds/hunan_sf.rds")
 ```
 
 # Convert to SpatialPolygonDataFrame (sp)
@@ -155,7 +155,7 @@ tm_shape(hunan_gstat) +
 
 # Geographically Weighted Summary Statistics with fixed bandwidth
 
-## Determine fixed bandwidth 
+## Determine fixed bandwidth
 
 to do so, it is the same as the adaptive bandwidth except that the adaptive condition will now be FALSE.
 

@@ -26,17 +26,19 @@ This exercise focuses on applying geospatial analytics to explore and analyze th
 
 ## **Data used**
 
-For the purpose of this assignment, armed conflict data of Myanmar between 2021-2024 from [Armed Conflict Location & Event Data (ACLED)](https://acleddata.com/), an independent, impartial, international non-profit organization collecting data on violent conflict and protest in all countries and territories in the world, should be used.
+For this study, I used the armed conflict data for Myanmar from January 2021 to June 2024, sourced from [Armed Conflict Location & Event Data (ACLED)](https://acleddata.com/). I focused on four primary event types related to conflict:
 
-In terms of event types, students should focus on at least four main event types, namely: Battles, Explosions/Remote Violence, Strategic developments, and Violence against civilians.
+-   Battles
 
-In terms of study period, students should focus on quarterly armed conflict events from January 2021 until June 2024.
+-   Explosions/Remote Violence
 
--   ACLED_Myanmar.csv in the data folder
+-   Strategic Developments
+
+-   Violence Against Civilians
 
 Tools used:
 
--   [**acledata**](https://acleddata.com/data-export-tool/) **requires Access Key, Given**
+-   [**acledata**](https://acleddata.com/data-export-tool/)
 
 ::: panel-tabset
 ## The Task
@@ -74,21 +76,19 @@ The specific tasks of this take-home exercise are as follows:
 
 ## **Installing and Loading the R packages**
 
-In this hands-on exercise, five R packages will be used, they are:
+Before getting into the analysis, I need to load specific R packages that provide essential functions for handling spatial and point pattern data. Packages like `sf`, `spatstat`, and `sparr` offer tools for working with spatial features and conducting point pattern analysis, including kernel density estimation (KDE) and second-order spatial analysis. In total, five R packages will be used, they are:
 
 -   [**sf**](https://r-spatial.github.io/sf/), a relatively new R package specially designed to import, manage and process vector-based geospatial data in R.
 
 -   [**spatstat**](https://spatstat.org/), which has a wide range of useful functions for point pattern analysis. In this hands-on exercise, it will be used to perform 1st- and 2nd-order spatial point patterns analysis and derive kernel density estimation (KDE) layer.
 
--   sparr provides functions to estimate fixed and adaptive kernel
+-   [**sparr**](https://tilmandavies.github.io/sparr/index.html), provides functions to estimate fixed and adaptive kernel
 
 -   [**raster**](https://cran.r-project.org/web/packages/raster/) which reads, writes, manipulates, analyses and model of gridded spatial data (i.e. raster). In this hands-on exercise, it will be used to convert image output generate by spatstat into raster format.
 
 -   [**maptools**](https://cran.r-project.org/web/packages/maptools/index.html) which provides a set of tools for manipulating geographic data. In this hands-on exercise, we mainly use it to convert *Spatial* objects into *ppp* format of **spatstat**. (Deprecated as of October 2023)
 
 -   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
-
-Use the code chunk below to install and launch the five R packages.
 
 # Installing maptools
 
@@ -100,11 +100,15 @@ Use the code chunk below to install and launch the five R packages.
 install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
 ```
 
+Use the code chunk below to install and launch the five R packages.
+
 ```{r}
 pacman::p_load(tmap, sf, tidyverse, raster, spatstat, sp, sparr, dplyr)
 ```
 
-Since it is a .csv file, we will use readr::read_csv() to get the Myanmar data. We will also import the kml data which gives the outline of the country
+## **Importing and Transforming the Data**
+
+I then import the armed conflict data (`ACLED_Myanmar.csv`) and the KML files containing Myanmar’s administrative boundaries. The csv file contains the conflict event data, including latitude, longitude, and the type of event (e.g., battles or explosions). I used the `readr::read_csv()` function to load the CSV data and convert it into an `sf` object, which allows me to handle the spatial features (like coordinates) directly in R.
 
 ```{r}
 acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
@@ -112,7 +116,11 @@ acled_sf <- readr::read_csv("data/myanmar/ACLED_Myanmar.csv") %>%
            crs = 4326) %>%
   st_transform(crs = 32647) %>%
     mutate(event_date = dmy(event_date))
-#acled_sf <- acled_sf %>% dplyr::filter(event_type == "Political Violence")
+```
+
+Next, I imported the KML files to give me Myanmar’s administrative boundaries at different levels (e.g., provinces, districts). These boundaries will help contextualize the spatial patterns of conflict events within the country’s political borders.
+
+```{r}
 adm0 <- st_read("data/myanmar/geonode-mmr_polbnda_adm0_250k_mimu_1.kml")
 adm2 <- st_read("data/myanmar/geonode-mmr_polbnda_adm2_250k_mimu.kml")
 adm3 <- st_read("data/myanmar/geonode-mmr_polbnda_adm3_250k_mimu_1.kml")
@@ -128,7 +136,9 @@ Next i want to find out about what column names are found in the csv data, so th
 colnames(acled_sf)
 ```
 
-since the iso, country and region will definitely be the same for the entire data, we will remove unneccessary data to make reading the data simpler by using the select function from the dplyr package.
+## **Data Wrangling**
+
+In this step, I examined the column names of the imported dataset to better understand the variables available and decide which ones were relevant to my analysis. I noticed that variables such as country, region, and ISO codes were redundant since all data points are specific to Myanmar. I removed these columns to simplify the dataset and reduce unnecessary clutter.
 
 ```{r}
 acled_sf <- acled_sf %>% dplyr::select(-c("iso", "region", "country", "notes"))
@@ -178,7 +188,9 @@ write_rds(acled_sf, "data/rds/acled_sf.rds") # keep in tibble format
 acled_sf <- read_rds("data/rds/acled_sf.rds")
 ```
 
-## Convert acled_sf into their various quarters (14 in total)
+## **Quarterly Data Segmentation**
+
+Since the objective is to study the temporal patterns of armed conflict over time, I segmented the dataset by quarters (Q1, Q2, Q3, and Q4) for each year. This approach makes it easier to analyze changes in conflict dynamics throughout the years.
 
 ```{r}
 # Convert event_date to quarters for quarterly analysis, shift quarter to 4th column for easier reference
@@ -187,11 +199,7 @@ myanmar_sf <- acled_sf %>%
   dplyr::select(1:3, quarter, everything())
 ```
 
-### Extract into various data frames based on the quarters
-
-we do this so that we have lesser data to work with for each data frame, making it faster overall
-
-### Split the quarters based on the event_type in the myanmar_sf data frames
+I further segmented the data based on conflict event types (battles, explosions, strategic developments, and violence against civilians) for each quarter. By doing this, I can isolate different types of conflict events and analyze their distribution over time.
 
 ```{r}
 # Get all quarters from the data
@@ -268,18 +276,15 @@ In this case i used myanmar_sp_2023_Q3_sd
 myanmar_sp_2023_Q3_sd
 ```
 
-## **Converting the generic sp format into spatstat’s ppp format**
+## **Converting the generic spatial format into spatstat’s ppp format**
+
+Next, I will convert the spatial data frames into `ppp` (planar point pattern) objects. This step is crucial because `ppp` objects are required for performing point pattern analyses like kernel density estimation and second-order analyses in `spatstat`. A `ppp` object holds the coordinates of events, along with optional window boundaries and marks (such as event type or time).
 
 ```{r}
 for (df_name in myanmar_sfs) {
   df <- get(df_name)
-  # Convert to ppp object
   ppp_object <- as.ppp(df)
-  
-  # Create a name for the new ppp object
   ppp_name <- gsub("sf", "ppp", df_name)
-  
-  # Assign the ppp object to a variable with the new name
   assign(ppp_name, ppp_object)
 }
 myanmar_ppps <- ls(pattern = "myanmar_ppp_")
@@ -303,7 +308,9 @@ any(duplicated(myanmar_ppp_2023_Q3_b))
 sum(multiplicity(myanmar_ppp_2023_Q3_b) > 1)
 ```
 
-### **Creating *owin* objects**
+## **Creating *owin* objects**
+
+I also created corresponding `owin` (window) objects, which define the boundaries of the region under analysis. These `owin` objects allow me to confine my spatial analysis to the boundaries of Myanmar.
 
 ```{r}
 for (df_name in myanmar_sfs) {
@@ -431,52 +438,96 @@ bw.diggle(myanmar_ppp_2021_Q1_sd)
 ```
 
 | Function  | Methodology                                | Advantages                                      | Limitations                                          |
-|------------------|------------------|------------------|-------------------|
+|------------------|------------------|------------------|----------------------------------|
 | bw.CvL    | Least Squares Cross-Validation             | Data-driven, adaptive                           | Computationally intensive, sensitive to outliers     |
 | bw.scott  | Scott’s Rule of Thumb                      | Simple, quick                                   | Assumes Gaussian distribution, non-adaptive          |
 | bw.ppl    | Penalized Profile Likelihood               | Balances fit and smoothness, flexible           | Complex, requires penalty parameter tuning           |
 | bw.diggle | Diggle’s Method (Edge-corrected, adaptive) | Tailored for spatial data, handles edge effects | More specific, potentially computationally demanding |
 
--   **For Quick, General Estimates:** `bw.scott()` is suitable when you need a fast, rule-of-thumb bandwidth without deep customization.
+I have explored different automatic bandwidth selection methods for kernel density estimation, applied to my spatio-temporal data on strategic developments in Myanmar. Here's what each method represents and how I interpreted the results:
 
--   **For Data-Driven Precision:** `bw.CvL()` offers a more tailored bandwidth selection by minimizing prediction error but at a higher computational cost.
+1.  **bw.CvL (Cross-Validation for Likelihood)**:
 
--   **For Balancing Smoothness and Fit:** `bw.ppl()` is ideal when you want to control the trade-off between overfitting and oversmoothing.
+    -   **Sigma**: `235083.6`
 
--   **For Spatially Inhomogeneous Data with Edge Concerns:** `bw.diggle()` is preferable when dealing with spatial point patterns that exhibit varying intensities and are subject to boundary effects.
+    -   **Explanation**: This method finds the bandwidth by minimizing prediction error, balancing overfitting and underfitting. It’s data-driven but also computationally more intensive. The large sigma value of `235083.6` means a high level of smoothing, where smaller clusters of points are less likely to be mentioned. In my case, this would give a broader, more generalized view of the conflict hotspots.
+
+2.  **bw.scott (Scott’s Rule of Thumb)**:
+
+    -   **Sigma.x**: `49839.57`, **Sigma.y**: `121971.78`
+
+    -   **Explanation**: The Scott’s method provides bandwidth estimates based on a rule of thumb, with different values for the x and y directions. It compute faster than cross-validation and the two sigma values show how much smoothing is applied in each spatial direction. Scott's rule of thumb allows for a more moderate smoothing, capturing both large-scale trends and some local variations in my data.
+
+3.  **bw.ppl (Penalized Profile Likelihood)**:
+
+    -   **Sigma**: `15557.15`
+
+    -   **Explanation**: The Penalized Profile Likelihood method balances model fit and smoothness, with a penalty to avoid over-fitting. The lower sigma value (`15557.15`) means it has more localized smoothing than the Cross-Validation or Scott’s method, meaning it will better highlight smaller clusters in my data while still avoiding over-fitting.
+
+4.  **bw.diggle (Diggle’s Method)**:
+
+    -   **Sigma**: `191.6059`
+
+    -   **Explanation**: Diggle’s method is particularly good for handling edge effects in spatial data. The very small sigma value of `191.6059` means that this method emphasizes fine-scale local clusters, giving a much more detailed view of the spatial point pattern. In this case, it would allow me to detect even the smallest clusters of conflict events, which could be crucial for my analysis.
+
+### What These Results Mean for My Analysis:
+
+-   **bw.CvL** gave me a very broad view of the conflict patterns, smoothing over smaller, more detailed clusters. This could be useful for understanding general trends over large areas.
+
+-   **bw.scott** provided me with moderate smoothing, balancing between broad and fine trends.
+
+-   **bw.ppl** gave a more localized view, which is useful for detecting finer clusters without overfitting.
+
+-   **bw.diggle** applied the least smoothing, preserving the smallest details in my data, which could help in identifying specific conflict hotspots.
 
 ```{r}
-acled_myanmar_ppl <- density(acled_myanmar_ppp.km, 
-                               sigma=bw.ppl, 
-                               edge=TRUE,
-                               kernel="gaussian")
-par(mfrow=c(1,2))
-plot(acled_myanmar.bw, main = "bw.diggle")
-plot(acled_myanmar.ppl, main = "bw.ppl")
+myanmar_ppp_ppl <- density(myanmar_ppp_2021_Q1_sd,
+                           sigma = bw.ppl(myanmar_ppp_2021_Q1_sd),
+                           edge = TRUE,
+                           kernel = "gaussian")
+
+# plot layout
+par(mfrow = c(1, 2))
+
+plot(density(myanmar_ppp_2021_Q1_sd,
+             sigma = bw.diggle(myanmar_ppp_2021_Q1_sd),
+             edge = TRUE),
+     main = "bw.diggle")
+
+plot(myanmar_ppp_ppl, main = "bw.ppl")
 ```
 
 ```{r}
-par(mfrow=c(2,2))
-plot(density(acled_myanmar_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="gaussian"), 
-     main="Gaussian")
-plot(density(acled_myanmar_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="epanechnikov"), 
-     main="Epanechnikov")
-plot(density(acled_myanmar_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="quartic"), 
-     main="Quartic")
-plot(density(acled_myanmar_ppp.km, 
-             sigma=bw.ppl, 
-             edge=TRUE, 
-             kernel="disc"), 
-     main="Disc")
+par(mfrow = c(2, 2))
+
+# Gaussian kernel
+plot(density(myanmar_ppp_2021_Q1_sd,
+             sigma = bw.ppl(myanmar_ppp_2021_Q1_sd),
+             edge = TRUE,
+             kernel = "gaussian"),
+     main = "Gaussian")
+
+# Epanechnikov kernel
+plot(density(myanmar_ppp_2021_Q1_sd,
+             sigma = bw.ppl(myanmar_ppp_2021_Q1_sd),
+             edge = TRUE,
+             kernel = "epanechnikov"),
+     main = "Epanechnikov")
+
+# Quartic kernel
+plot(density(myanmar_ppp_2021_Q1_sd,
+             sigma = bw.ppl(myanmar_ppp_2021_Q1_sd),
+             edge = TRUE,
+             kernel = "quartic"),
+     main = "Quartic")
+
+# Disc kernel
+plot(density(myanmar_ppp_2021_Q1_sd,
+             sigma = bw.ppl(myanmar_ppp_2021_Q1_sd),
+             edge = TRUE,
+             kernel = "disc"),
+     main = "Disc")
+
 ```
 
 # Deriving quarterly spatio-temporal KDE layers
@@ -849,21 +900,15 @@ helper_func_plot_kde_list(kde_list_sd, xlab = "Distance (km)", ylab = "Density")
 helper_func_plot_kde_list(kde_list_vac, xlab = "Distance (km)", ylab = "Density")
 ```
 
-## **2nd-order spatial point pattern analysis**
+## **Second-Order Spatial Point Patterns Analysis**
 
-On **spatial-temporal KDE layers**, typically i would use computing functions like the **Ripley’s K-function** or **L-function**. These functions help identify clustering patterns over different spatial scales.
+For deeper insights into spatial clustering, I performed **Second-Order Spatial Point Patterns Analysis** using the **K-function** and **L-function**. These functions measure the spatial interaction between points at various distances, helping me detect whether conflict events are clustered, dispersed, or randomly distributed across space.
 
-Given that I'm working with **spatio-temporal KDE layers**, to conduct **2nd-order spatial point pattern analysis,** i will use `spatstat` functions on my earlier KDE results.
+1.  **K-function**: This function computes the expected number of events within a given distance from a random event. If the observed K-function lies above the theoretical K-function, it suggests clustering; if below, it indicates dispersion.
 
-### Steps:
+2.  **L-function**: A linearized version of the K-function, the L-function makes it easier to interpret the results. A plot of the L-function helps visualize whether conflict events tend to cluster or disperse over different scales.
 
-1.  **Convert KDE layers to spatial point patterns**.
-
-2.  **Compute Ripley’s K-function (Kest)** or L-function (Lest).
-
-3.  **Plot the results to observe clustering or dispersion**.
-
-### Compute using K-function and/or L-function
+I filtered the conflict data by year to analyze temporal changes in spatial clustering. This helps in understanding how conflict intensity or distribution has evolved over time.
 
 ```{r}
 
@@ -940,3 +985,61 @@ helper_func_plot_kde_list(k_battles_results, xlab = "Distance (km)", ylab = "K(d
 # Plot L-function results for strategic developments by year
 helper_func_plot_kde_list(l_sd_results, xlab = "Distance (km)", ylab = "L(d)-r")
 ```
+
+```{r}
+# Create a directory to store the .rds files if it doesn't exist
+if (!dir.exists("data/rds")) {
+  dir.create("data/rds", recursive = TRUE)
+}
+all_objects <- ls()
+for (obj_name in all_objects) {
+  obj <- get(obj_name)
+  file_path <- paste0("data/rds/", obj_name, ".rds")
+  saveRDS(obj, file = file_path)
+}
+
+# Verify that the files were saved
+list.files("data/rds")
+```
+
+# References
+
+Here are the references for the sources and packages used throughout this project:
+
+1.  **Armed Conflict Location & Event Data (ACLED)**:\
+    ACLED Data for Myanmar Armed Conflict (2021-2024).\
+    URL: <https://acleddata.com/>
+
+2.  **R Packages**:
+
+    -   **`sf`**: Simple Features for R\
+        Pebesma, E. (2018). "Simple Features for R: Standardized Support for Spatial Vector Data." *The R Journal*, 10(1), 439–446.\
+        URL: <https://r-spatial.github.io/sf/>
+
+    -   **`spatstat`**: Spatial Point Pattern Analysis, Model-Fitting, Simulation, Tests\
+        Baddeley, A., Rubak, E., Turner, R. (2015). "Spatial Point Patterns: Methodology and Applications with R." Chapman and Hall/CRC Press.\
+        URL: <https://spatstat.org/>
+
+    -   **`sparr`**: Spatial Relative Risk Functions and Kernel Density Estimation\
+        Davies, T.M., Hazelton, M.L. (2010). "Adaptive kernel estimation of spatial relative risk." *Statistics in Medicine*, 29(23), 2423-2437.\
+        URL: https://cran.r-project.org/web/packages/sparr/
+
+    -   **`tidyverse`**: A Collection of R Packages for Data Science\
+        Wickham, H., Averick, M., Bryan, J., Chang, W., et al. (2019). "Welcome to the Tidyverse." *Journal of Open Source Software*, 4(43), 1686.\
+        URL: <https://www.tidyverse.org/>
+
+    -   **`tmap`**: Thematic Maps\
+        Tennekes, M. (2018). "tmap: Thematic Maps in R." *Journal of Statistical Software*, 84(6), 1–39.\
+        URL: <https://cran.r-project.org/web/packages/tmap/>
+
+    -   **`raster`**: Geographic Data Analysis and Modeling\
+        Hijmans, R.J. (2021). "raster: Geographic Data Analysis and Modeling." *R package version 3.4-10.*\
+        URL: <https://cran.r-project.org/web/packages/raster/>
+
+    -   **`maptools`**: Tools for Handling Spatial Objects\
+        Bivand, R., & Lewin-Koh, N. (2021). "maptools: Tools for Handling Spatial Objects." *R package version 1.1-2.*\
+        URL: <https://cran.r-project.org/web/packages/maptools/>
+
+3.  **ChatGPT**: Assistance in Code Development and Analysis Guidance\
+    OpenAI's GPT-4-based language model, *ChatGPT*. Assisted in code optimization, data analysis, and methodology insights for geospatial analytics using R.\
+    URL: <https://openai.com/chatgpt>

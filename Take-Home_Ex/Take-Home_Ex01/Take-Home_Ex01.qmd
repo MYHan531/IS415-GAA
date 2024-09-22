@@ -26,7 +26,11 @@ This exercise focuses on applying geospatial analytics to explore and analyze th
 
 ## **Data used**
 
-To provide answers to the questions above, the data set that will be used is:
+For the purpose of this assignment, armed conflict data of Myanmar between 2021-2024 from [Armed Conflict Location & Event Data (ACLED)](https://acleddata.com/), an independent, impartial, international non-profit organization collecting data on violent conflict and protest in all countries and territories in the world, should be used.
+
+In terms of event types, students should focus on at least four main event types, namely: Battles, Explosions/Remote Violence, Strategic developments, and Violence against civilians.
+
+In terms of study period, students should focus on quarterly armed conflict events from January 2021 until June 2024.
 
 -   ACLED_Myanmar.csv in the data folder
 
@@ -427,7 +431,7 @@ bw.diggle(myanmar_ppp_2021_Q1_sd)
 ```
 
 | Function  | Methodology                                | Advantages                                      | Limitations                                          |
-|-----------|--------------------------------------------|-------------------------------------------------|------------------------------------------------------|
+|------------------|------------------|------------------|-------------------|
 | bw.CvL    | Least Squares Cross-Validation             | Data-driven, adaptive                           | Computationally intensive, sensitive to outliers     |
 | bw.scott  | Scott’s Rule of Thumb                      | Simple, quick                                   | Assumes Gaussian distribution, non-adaptive          |
 | bw.ppl    | Penalized Profile Likelihood               | Balances fit and smoothness, flexible           | Complex, requires penalty parameter tuning           |

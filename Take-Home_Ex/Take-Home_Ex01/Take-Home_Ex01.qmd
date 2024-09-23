@@ -438,7 +438,7 @@ bw.diggle(myanmar_ppp_2021_Q1_sd)
 ```
 
 | Function  | Methodology                                | Advantages                                      | Limitations                                          |
-|------------------|------------------|------------------|----------------------------------|
+|-----------|--------------------------------------------|-------------------------------------------------|------------------------------------------------------|
 | bw.CvL    | Least Squares Cross-Validation             | Data-driven, adaptive                           | Computationally intensive, sensitive to outliers     |
 | bw.scott  | Scott’s Rule of Thumb                      | Simple, quick                                   | Assumes Gaussian distribution, non-adaptive          |
 | bw.ppl    | Penalized Profile Likelihood               | Balances fit and smoothness, flexible           | Complex, requires penalty parameter tuning           |

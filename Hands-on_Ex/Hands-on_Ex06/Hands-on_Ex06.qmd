@@ -73,9 +73,9 @@ The code chunk below is used to perform the following tasks:
 
 -   launching the packages into R environment.
 
-    ```{r}
-    pacman::p_load(sf, spdep, tmap, tidyverse)
-    ```
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse)
+```
 
 ## **Getting the Data Into R Environment**
 
@@ -104,7 +104,7 @@ The code chunk below will be used to update the attribute table of *hunan*'s Spa
 
 ```{r}
 hunan <- left_join(hunan,hunan2012) %>%
-  select(1:4, 7, 15)
+  dplyr::select(1:4, 7, 15)
 ```
 
 ### **Visualising Regional Development Indicator**
@@ -117,14 +117,14 @@ equal <- tm_shape(hunan) +
           n = 5,
           style = "equal") +
   tm_borders(alpha = 0.5) +
-  tm_layout(main.title = "Equal interval classification")
+  tm_layout(main.title = "Equal Interval Classification")
 
 quantile <- tm_shape(hunan) +
   tm_fill("GDPPC",
           n = 5,
           style = "quantile") +
   tm_borders(alpha = 0.5) +
-  tm_layout(main.title = "Equal quantile classification")
+  tm_layout(main.title = "Equal Quantile Classification")
 
 tmap_arrange(equal, 
              quantile, 
@@ -784,3 +784,5 @@ tmap_arrange(gdppc,
 ```
 
 | Question: What statistical observation can you draw from the Gi map above?
+
+I observed that therer is significant spatial clusters of high and low GDP per capita, indicating economic hotspots (in red) and coldspots (in blue). These clusters show statistically significant patterns of wealth disparity, with higher GDP concentrated in central and eastern regions, while lower GDP is more likely seen in southern areas. The map also reveals clear spatial inequality, suggesting targeted economic development may be necessary to address these regional imbalances.

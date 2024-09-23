@@ -1,0 +1,237 @@
+---
+title: "In-Class_Ex06 - Local & Global Measures of Spatial Autocorrelation"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-23
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+---
+
+# Installing and Loading the R Packages
+
+```{r}
+pacman::p_load(sf, tidyverse, tmap, sfdep)
+```
+
+### **The Study Area and Data**
+
+Two data sets will be used in this hands-on exercise, they are:
+
+-   Hunan province administrative boundary layer at county level. This is a geospatial data set in ESRI shapefile format.
+
+-   Hunan_2012.csv: This csv file contains selected Hunan's local development indicators in 2012.
+
+## **Getting the Data Into R Environment**
+
+### **Import shapefile into r environment**
+
+The code chunk below uses [`st_read()`](https://r-spatial.github.io/sf/reference/st_read.html) of **sf** package to import Hunan shapefile into R. The imported shapefile will be **simple features** Object of **sf**.
+
+```{r}
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+### **Import csv file into r environment**
+
+Next, we will import *Hunan_2012.csv* into R by using [`read_csv()`](https://readr.tidyverse.org/reference/read_delim.html) of **readr** package. The output is R data frame class.
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+### **Performing relational join**
+
+The code chunk below will be used to update the attribute table of *hunan*'s SpatialPolygonsDataFrame with the attribute fields of *hunan2012* dataframe. This is performed by using [`left_join()`](https://dplyr.tidyverse.org/reference/mutate-joins.html) of **dplyr** package.
+
+```{r}
+hunan_GDPPC <- left_join(hunan,hunan2012) %>%
+  dplyr::select(1:4, 7, 15)
+```
+
+## **Visualising Regional Development Indicator**
+
+Now, we are going to prepare a basemap and a choropleth map showing the distribution of GDPPC 2012 by using *qtm()* of **tmap** package.
+
+```{r}
+basemap <- tm_shape(hunan) +
+  tm_polygons() +
+  tm_text("NAME_3", size=0.5)
+
+gdppc <- qtm(hunan, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+```
+
+```{r}
+wm_q <- hunan_GDPPC %>% 
+  dplyr::mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb, 
+                         style = "W"),
+         .before = 1)
+```
+
+# Computing Global Moran' I
+
+In the code chunk below, global_moran() function is used to compute the Moran's I value. Different from the spdep packahe, the output is a tibble data.frame
+
+```{r}
+moranI <- global_moran(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
+glimpse(moranI)
+```
+
+## Performing Global Moran's I test
+
+In general, Moran's I test will be performed instead of just computing the Moran's I statistics. With sfdep package, Moran's I test can be performed using global_moran_test() as shown in the code chunk below.
+
+```{r}
+global_moran_test(wm_q$GDPPC,
+                  wm_q$nb,
+                  wm_q$wt)
+```
+
+## Performing Global Moran's I permutation test
+
+In practice, Monte Carlo simulation should be used to perform the statistical test. For sfdep, it is supported by global_moran_perm()
+
+```{r}
+set.seed(1234)
+```
+
+```{r}
+global_moran_perm(wm_q$GDPPC,
+                  wm_q$nb,
+                  wm_q$wt,
+                  nsim = 99)
+```
+
+## Computing local Moran's I
+
+Compute Local Moran's I of GDPPC at county level by using local_moran() of the sfdep package.
+
+```{r}
+lisa <- wm_q %>% 
+  dplyr::mutate(local_moran = local_moran(
+    GDPPC, nb, wt, nsim = 99),
+    .before = 1) %>% 
+  unnest(local_moran)
+```
+
+p_ii is base method, p_ii_sim is using the simulation method, p_folded_sim is using the k-fold method, p_ii_sim has no replacement, p_folded numbers are lower but roughly the method is still the same.
+
+To ensure consistency, stay with 1 type of p-value (either p_ii_sim or p_folded_sim)
+
+key thing is the mean and median, skewness can be both positive and negative numbers, i can sort it to make it easier to read
+
+```{r}
+# to measure skewness
+median(lisa$skewness) # -0.6968806
+# to see the mean skewness across the whole data
+mean(lisa$skewness) # -0.2233379
+# can also plot it out into a histogram to visualise better to see the skewness
+```
+
+-   excessive skewness -\> use median columns
+
+-   if close to 0 skewness -\> use mean columns
+
+## Visualising local Moran's I and p-value
+
+the next map is prepared using this chunk of code
+
+```{r}
+tmap_mode("plot")
+map1 <- tm_shape(lisa) + 
+  tm_fill("ii") + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(
+    main.title = "Local Moran's I of GDPPC",
+    main.title.size = 1.5)
+
+map2 <- tm_shape(lisa) +
+  tm_fill("p_ii",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+          labels = c("0.001", "0.01", "0.05", "Not sig")) +
+  tm_borders(alpha = 0.5) +
+  tm_layout(
+    main.title = "p-value of local Moran's I",
+    main.title.size = 1.5
+  )
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+# Visualising LISA map
+
+LISA map is a categorical map showing outliers and clusters. There are two types of outliers namely: High-Low and Low-High outliers. Likewise there are two types of clusters namely: High-High and Low-Low clusters. In fact, LISA map is an interpreted map by combining local Moran's I of geographical areas and their respective p-values.
+
+In this case the LISA categories are the mean, median and pysal. In general, classification in mean will be used as shown in the code chunk below.
+
+```{r}
+lisa_sig <- lisa %>% 
+  filter(p_ii < 0.05)
+tm_shape(lisa) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig) +
+  tm_fill("mean") +
+  tm_borders(alpha = 0.4)
+```
+
+## Computing local Gi\* statistics
+
+```{r}
+wm_idw <- hunan_GDPPC %>%
+  mutate(
+    nb = st_contiguity(geometry),
+    wts = st_inverse_distance(
+      nb, geometry,
+      scale = 1, alpha = 1
+    ),
+    .before = 1
+  )
+```
+
+we will now compute the local Gi\* by using the code chunk below
+
+```{r}
+HCSA <- wm_idw %>%
+  mutate(local_Gi = local_gstar_perm(
+    GDPPC, nb, wt, nsim = 99
+  ), .before = 1) %>%
+  unnest(local_Gi)
+
+HCSA
+```
+
+```{r}
+tm_shape(HCSA) +
+  tm_fill("gi_star") + 
+  tm_borders(alpha = 0.5)
+  
+```
+
+# Visualising hot spot and cold spot areas
+
+```{r}
+HCSA_sig <- HCSA %>% 
+  filter(p_sim < 0.05)
+tm_shape(HCSA) +
+  tm_polygons()+
+  tm_borders(alpha = 0.5) +
+tm_shape(HCSA_sig) +
+  tm_fill("gi_star") +
+  tm_borders(alpha = 0.4)
+```

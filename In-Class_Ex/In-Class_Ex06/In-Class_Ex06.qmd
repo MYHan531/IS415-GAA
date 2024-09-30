@@ -68,7 +68,7 @@ basemap <- tm_shape(hunan) +
   tm_polygons() +
   tm_text("NAME_3", size=0.5)
 
-gdppc <- qtm(hunan, "GDPPC")
+gdppc <- qtm(hunan_GDPPC, "GDPPC")
 tmap_arrange(basemap, gdppc, asp=1, ncol=2)
 ```
 

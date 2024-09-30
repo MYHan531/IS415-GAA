@@ -1,0 +1,288 @@
+---
+title: "Hands-On_Ex04 - Spatio-Temporal Point Patterns Analysis"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-09-09
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+---
+
+## **Overview**
+
+A spatio-temporal point process (also called space-time or spatial-temporal point process) is a random collection of points, where each point represents the time and location of an event. Examples of events include incidence of disease, sightings or births of a species, or the occurrences of fires, earthquakes, lightning strikes, tsunamis, or volcanic eruptions.
+
+The analysis of spatio-temporal point patterns is becoming increasingly necessary, given the rapid emergence of geographically and temporally indexed data in a wide range of fields. Several spatio-temporal point patterns analysis methods have been introduced and implemented in R in the last ten years. This chapter shows how various R packages can be combined to run a set of spatio-temporal point pattern analyses in a guided and intuitive way. A real world forest fire events in Kepulauan Bangka Belitung, Indonesia from 1st January 2023 to 31st December 2023 is used to illustrate the methods, procedures and interpretations.
+
+## **Learning Outcome**
+
+### **The research questions**
+
+The specific questions we would like to answer are:
+
+-   are the locations of forest fire in Kepulauan Bangka Belitung spatial and spatio-temporally independent?
+
+-   if the answer is NO, where and when the observed forest fire locations tend to cluster?
+
+## **The data**
+
+For the purpose of this exercise, two data sets will be used, they are:
+
+-   *forestfires*, a csv file provides locations of forest fire detected from the Moderate Resolution Imaging Spectroradiometer (MODIS) sensor data. The data are downloaded from [Fire Information for Resource Management System](https://firms.modaps.eosdis.nasa.gov/download/). For the purpose of this exercise, only forest fires within Kepulauan Bangka Belitung will be used.
+
+-   *Kepulauan_Bangka_Belitung*, an ESRI shapefile showing the sub-district (i.e. [kelurahan](https://en.wikipedia.org/wiki/Villages_of_Indonesia)) boundary of Kepulauan Bangka Belitung. The data set was downloaded from [Indonesia Geospatial](https://www.indonesia-geospasial.com/2023/05/download-shapefile-batas-administrasi.html) portal. The original data covers the whole Indonesia. For the purpose of this exercise, only sub-districts within Kepulauan Bangka Belitung are extracted.
+
+## **Installing and Loading the R packages**
+
+For the purpose of this study, six R packages will be used. They are:
+
+-   [**sf**](https://r-spatial.github.io/sf/) provides functions for importing processing and wrangling geospatial data,,
+
+-   [**raster**](https://rspatial.org/raster/) for handling raster data in R,
+
+-   [**spatstat**](https://cran.r-project.org/web/packages/spatstat/index.html) for performing Spatial Point Patterns Analysis such as kcross, Lcross, etc.,
+
+-   [**sparr**](https://tilmandavies.github.io/sparr/index.html) provides functions to estimate fixed and adaptive kernel-smoothed spatial relative risk surfaces via the density-ratio method and perform subsequent inference. Fixed-bandwidth spatiotemporal density and relative risk estimation is also supported
+
+-   [**tmap**](https://r-tmap.github.io/tmap/) provides functions to produce cartographic quality thematic maps, and
+
+-   [**tidyverse**](https://www.tidyverse.org/), a family of R packages that provide functions to perform common data science tasks including and not limited to data import, data transformation, data wrangling and data visualisation.
+
+## Load the R packages using Pacman::p_load
+
+```{r}
+pacman::p_load(sf, raster, spatstat, sparr, tmap, tidyverse)
+```
+
+## **Importing and Preparing Study Area**
+
+### **Importing study area**
+
+Code chunk below is used import study area (i.e. Kepulauan Bangka Belitung) into R environment.
+
+```{r}
+kbb <- st_read(dsn="data/rawdata",
+               layer = "Kepulauan_Bangka_Belitung") 
+```
+
+In sf format:
+
+```{r}
+kbb_sf <- st_read(dsn="data/rawdata",
+               layer = "Kepulauan_Bangka_Belitung") %>%
+  st_union() %>%
+  st_zm(drop = TRUE, what = "ZM") %>%
+  st_transform(crs = 32748)
+```
+
+### **Converting OWIN**
+
+Next, `as.owin()` is used to convert *kbb* into an **owin** object.
+
+```{r}
+kbb_owin <- as.owin(kbb_sf)
+kbb_owin
+```
+
+Use `class()` is used to confirm if the output is indeed an owin object.
+
+```{r}
+class(kbb_owin)
+```
+
+## **Importing and Preparing Forest Fire data**
+
+Next, we will import the forest fire data set (i.e. *forestfires.csv*) into R environment.
+
+```{r}
+fire_sf <- read_csv("data/rawdata/forestfires.csv") %>%
+  st_as_sf(coords = c("longitude", "latitude"),
+                       crs = 4326) %>%
+  st_transform(crs = 32748)
+```
+
+Because **ppp** object only accept numerical or character as mark. The code chunk below is used to convert data type of *acq_date* to numeric.
+
+```{r}
+fire_sf <- fire_sf %>% 
+  mutate(DayofYear = yday(acq_date)) %>%
+  mutate(Month_num = month(acq_date)) %>%
+  mutate(Month_fac = month(acq_date, 
+                           label = TRUE, 
+                           abbr = FALSE))
+```
+
+## **Visualising the Fire Points**
+
+### **Overall plot**
+
+We will now prepare a point symbol map showing the distribution of fire points using this code chunk below.
+
+```{r}
+tm_shape(kbb_sf)+
+  tm_polygons() +
+tm_shape(fire_sf) +
+  tm_dots()
+```
+
+### **Visuaising geographic distribution of forest fires by month**
+
+Next, we will prepare a point symbol map showing the monthly geography distribution of fire points in 2023 using this code chunk below.
+
+```{r}
+tm_shape(kbb_sf)+
+  tm_polygons() +
+tm_shape(fire_sf) +
+  tm_dots(size = 0.1) +
+tm_facets(by="Month_fac", 
+            free.coords=FALSE, 
+            drop.units = TRUE)
+```
+
+## **Computing STKDE by Month**
+
+In this section, you will learn how to compute STKDE by using [`spattemp.density()`](https://tilmandavies.github.io/sparr/reference/spattemp.density.html) of **sparr** package. Before using the function, it is highly recommended you read the function’s reference guide in detail in order to understand the input data requirements and the output object generated.
+
+### **Extracting forest fires by month**
+
+The code chunk below is used to remove the unwanted fields from *fire_sf* sf data.frame. This is because `as.ppp()` only need the mark field and geometry field from the input sf data.frame.
+
+```{r}
+fire_month <- fire_sf %>% 
+  select(Month_num)
+```
+
+### **Creating ppp**
+
+The code chunk below is used to derive a **ppp** object called *fire_month* from *fire_month* sf data.frame.
+
+```{r}
+fire_month_ppp <- as.ppp(fire_month)
+fire_month_ppp
+```
+
+Check if the output is in the correct object class
+
+```{r}
+summary(fire_month_ppp)
+```
+
+Check if there are duplicated point events by using the code chunk below.
+
+```{r}
+any(duplicated(fire_month_ppp))
+```
+
+### **Including Owin object**
+
+The code chunk below is used to combine *origin_am_ppp* and *am_owin* objects into one.
+
+```{r}
+fire_month_owin <- fire_month_ppp[kbb_owin]
+summary(fire_month_owin)
+```
+
+As a good practice, `plot()` is used to plot *ff_owin* so that we can examine the correctness of the output object.
+
+```{r}
+plot(fire_month_owin)
+```
+
+### **Computing Spatio-temporal KDE**
+
+Next, `spattemp.density()` of sparr package is used to compute the STKDE.
+
+```{r}
+st_kde <- spattemp.density(fire_month_owin)
+summary(st_kde)
+```
+
+### **Plotting the spatio-temporal KDE object**
+
+In the code chunk below, `plot()` of R base is used to the KDE for between July 2023 - December 2023.
+
+```{r}
+tims <- c(7,8,9,10,11,12)
+par(mfcol=c(2,3))
+for(i in tims){ 
+  plot(st_kde, i, 
+       override.par=FALSE, 
+       fix.range=TRUE, 
+       main=paste("KDE at month",i))
+}
+```
+
+## **Computing STKDE by Day of Year**
+
+In this section, you will learn how to computer the STKDE of forest fires by day of year.
+
+### **Creating ppp object**
+
+In the code chunk below, DayofYear field is included in the output ppp object.
+
+```{r}
+fire_yday_ppp <- fire_sf %>% 
+  select(DayofYear) %>%
+  as.ppp()
+```
+
+### **Including Owin object**
+
+Next, code chunk below is used to combine the ppp object and the owin object.
+
+```{r}
+fire_yday_owin <- fire_yday_ppp[kbb_owin]
+summary(fire_yday_owin)
+```
+
+```{r}
+kde_yday <- spattemp.density(
+  fire_yday_owin)
+summary(kde_yday)
+```
+
+plot the kde_yday which is each day of the year
+
+```{r}
+plot(kde_yday)
+```
+
+## **Computing STKDE by Day of Year: Improved method**
+
+One of the nice function provides in sparr package is `BOOT.spattemp()`. It support bandwidth selection for standalone spatiotemporal density/intensity based on bootstrap estimation of the MISE, providing an isotropic scalar spatial bandwidth and a scalar temporal bandwidth.
+
+Code chunk below uses `BOOT.spattemp()` to determine both the spatial bandwidth and the scalar temporal bandwidth.
+
+```{r}
+set.seed(1234)
+BOOT.spattemp(fire_yday_owin) 
+```
+
+### **Computing spatio-temporal KDE**
+
+Now, the STKDE will be derived by using h and lambda values derive in previous step.
+
+```{r}
+kde_yday <- spattemp.density(
+  fire_yday_owin,
+  h = 9000,
+  lambda = 19)
+summary(kde_yday)
+```
+
+### **Plotting the output spatio-temporal KDE**
+
+Last, `plot()` of **sparr** package is used to plot the output as shown below.
+
+```{r}
+plot(kde_yday)
+```

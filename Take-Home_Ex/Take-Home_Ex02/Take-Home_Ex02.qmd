@@ -73,50 +73,444 @@ The tasks for this take-home exercise are as follows:
 
 Before proceeding with the analysis, it is essential to install and load the required R packages:
 
+-   [`sf`](https://rdrr.io/github/r-spatial/sf/man/sf-package.html) : provides a standardised way to encode spatial vector data in R environment, facilitating spatial data operations and analysis.
+
+-   [`st`](https://rdrr.io/cran/sf/man/st.html) : creats simple features from numeric vectors, matrices, or lists, enabling the representation and manipulation of spatial structures in R.
+
+-   [`tidyverse`](https://www.tidyverse.org/) : a collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structure.
+
+-   [`sfdep`](https://cran.r-project.org/web/packages/spdep/) : for computing spatial weights, global and local spatial autocorrelation statistics
+
+-   [`tmap`](https://cran.r-project.org/web/packages/tmap/) : for creating static and interactive visualisations and maps.
+
+-   [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/) : for creating advanced visualisations, graphics and maps using the Grammar of Graphics.
+
 ```{r}
 # Install and load necessary packages
-pacman::p_load(sf, tidyverse, sfdep, tmap, readr, ggplot2)
+pacman::p_load(sf, tidyverse, sfdep, tmap, readr, ggplot2, spdep)
 ```
 
-## **Importing and Transforming the Data**
+## **Importing and Transforming Geospatial Data**
 
-First, we will import the administrative boundary data for Thailand and the drug abuse dataset.
+In this section, `st_read()` of **sf** package will be used to import **`THALILAND_BORDERS_2022`** dataset into R environment.
 
 ```{r}
-# Load the province boundary data (sf object)
-provinces_sf <- st_read("path_to_boundary_file.shp")
 
-# Load the drug abuse data
-drug_data <- read_csv("path_to_drug_data.csv")
+adm0 <- st_read("data/geospatial/tha_admbnda_adm0_rtsd_20220121.shp")
+adm1 <- st_read("data/geospatial/tha_admbnda_adm1_rtsd_20220121.shp")
 
 # Display the structure of the datasets
-glimpse(provinces_sf)
-glimpse(drug_data)
+# glimpse(adm0)
+# glimpse(adm1)
+```
+
+We will verify the coordinate reference systems of the tainan object to ensure the assignment of the correct CRS value. WGS 84 should be the correct reference.
+
+```{r}
+st_crs(adm1)
+```
+
+Next, we will generate a plot of the adm1 object to visualise its structure.
+
+```{r}
+tmap_mode("plot")
+tm_shape(adm1)+
+  tm_fill(col="white")+
+  tm_borders(col = "black", lwd=0.3, alpha=0.6)+
+  tm_layout(
+    main.title = "Regions (Thailand)",
+    main.title.size = 1,
+    main.title.position = "center",
+    legend.show = FALSE,
+     frame = FALSE)
+```
+
+## **Importing Aspatial Data**
+
+In this section, `read_csv()` of **sf** package will be used to import the csv file into R environment. The output is R dataframe class.
+
+```{r}
+drug_data <- read_csv("data/aspatial/thai_drug_offenses_2017_2022.csv")
+# glimpse(drug_data)
 ```
 
 ## **Spatial Data Wrangling**
 
 Next, we merge the drug abuse data with the spatial dataset for Thailand provinces to prepare it for analysis.
 
-```{r}
-# Merge drug data with province boundaries
-drug_abuse_sf <- left_join(provinces_sf, drug_data, by = "province_id")
+### Inspect and Clean the Data
 
-# Check the merged data
-glimpse(drug_abuse_sf)
+Before merging, inspect the data to make sure the columns that should match (province names) are consistent in both datasets. If needed, clean and standardize the province names to avoid issues during the join.
+
+The importance of cleaning the data is crucial for this assessment, in the aspatial dataset, the naming of the provinces in english is slightly different from the geospatial dataset, for example: "Loburi" in drug_data is actually "Lop Buri" in adm1. If we do a left join, they will treat them as two separate locations instead of the intended one.
+
+```{r}
+library(dplyr)
+
+drug_data <- drug_data %>%
+  mutate(
+    province_en = recode(province_en, 
+                         "buogkan" = "Bueng Kan",
+                         "Loburi" = "Lop Buri")
+  )
+
+head(drug_data)
+```
+
+Then, merge the `drug_data` with the `adm1` shapefile using the `left_join()` function, with `province_en` from `drug_data` matching `ADM1_EN` from the `adm1` dataset.
+
+```{r}
+# Inspect unique province names in both datasets
+# unique(drug_data$province_en)
+# unique(adm1$ADM1_EN)
+
+
+# Perform the join on province_en and ADM1_EN
+drug_data_sf <- adm1 %>% 
+  left_join(drug_data, by = c("ADM1_EN" = "province_en"))
+
+
+# Check if the total number of provinces matches both datasets
+unique(drug_data_sf$ADM1_EN)
+
+# drug_data_sf <- drug_data_sf %>%
+#   filter(ADM1_EN != "Phetchabun")
+
+```
+
+List down the unique types of drug offences, if there are NA values in it, remove them:
+
+```{r}
+unique(drug_data_sf$types_of_drug_offenses)
+```
+
+For this analysis, I would focus on the **“trafficking_cases”** and **“possession_with_intent_to_distribute_cases”**. Here's the reasoning behind this choice:
+
+### Justification for Choosing:
+
+1.  **Trafficking Cases**:
+
+    -   **Relevance**: Drug trafficking is often a key indicator of organized crime and the movement of narcotics across regions. It reflects not only local consumption but also broader patterns of supply and demand, often linked to cross-border activities. In the case of Thailand, which is geographically near the **Golden Triangle** (a major drug-producing region), analyzing trafficking cases can help highlight key transit routes or areas where trafficking is prevalent.
+
+    -   **Informative**: By focusing on trafficking, we can uncover patterns in regions that might be heavily involved in the movement of drugs, either within Thailand or across borders. This can help identify provinces that serve as major conduits for the drug trade.
+
+2.  **Possession with Intent to Distribute Cases**:
+
+    -   **Relevance**: This category indicates individuals caught with drugs intended for sale or distribution, which can be an early-stage indicator of trafficking operations within regions. It helps identify not just end-users but those involved in drug distribution networks.
+
+    -   **Informative**: Combining this category with trafficking cases gives a more complete picture of drug-related activity, as it includes both small-scale distribution and larger trafficking operations.
+
+### Analysis Workflow:
+
+We will focus on visualizing and analyzing both **trafficking cases** and **possession with intent to distribute cases** to see how they are spatially distributed across provinces. This will help identify high-risk areas for drug movement and distribution within Thailand.
+
+### Handle Missing Data
+
+Sometimes, the join might not find matches for all provinces. You should check for `NA` values and decide how to handle them (e.g., remove rows, fill missing values, etc.).
+
+```{r}
+# Check for missing values after the join
+missing_provinces <- drug_data_sf %>% filter(is.na(fiscal_year))
+print(missing_provinces)
+```
+
+### Preparing the Spatial Data for Analysis
+
+Now that the data is merged, it’s ready for further spatial analysis such as global and local spatial autocorrelation, visualization, or clustering.
+
+### Check if data is in `sf`  format for Visualization
+
+We’ll primarily work with the **`sf`** object for visualization, but convert it to **`sp`** for spatial autocorrelation tasks.
+
+```{r}
+# Use sf for visualization
+class(drug_data_sf)
+```
+
+### Example Workflow:
+
+1.  **Data Exploration**: Explore the number of drug cases across provinces and over time.
+
+2.  **Data Aggregation**: You might want to aggregate the data by `fiscal_year` to calculate statistics such as total drug cases per province over the years.
+
+```{r}
+# Function to split the data by offense type and year
+split_data_by_year_type <- function(data, offense_type) {
+  
+  filtered_data <- data %>%
+    filter(types_of_drug_offenses == offense_type) %>%
+    select_if(~ any(!is.na(.)))  # Remove columns that are entirely NA
+  
+  years <- unique(filtered_data$fiscal_year)
+  
+  for (year in years) {
+    # Filter data for each year
+    year_data <- filtered_data %>%
+      filter(fiscal_year == year)
+    
+    # Dynamically assign the data frame to a variable named by year
+    assign(paste0(offense_type, "_data_", year), year_data, envir = .GlobalEnv)
+  }
+}
+
+# for possession with intent to distribute cases
+split_data_by_year_type(drug_data_sf, "possession_with_intent_to_distribute_cases")
+
+# for trafficking cases
+split_data_by_year_type(drug_data_sf, "trafficking_cases")
+```
+
+Plotting the Map for example (possession_data_2022, this is what we will use for Global and Local Moran's I Spatial autocorrelation)
+
+```{r}
+# Create map for possession with intent to distribute cases in 2012
+tm_shape(possession_with_intent_to_distribute_cases_data_2022) +
+  tm_polygons("no_cases", title = "Possession Cases in 2022", palette = "Blues") +
+  tm_layout(title = "Possession with Intent to Distribute Cases in 2022",
+            main.title.position = "center",
+            main.title.size = 2,
+            main.title.fontface = "bold",
+            legend.title.size = 1.8,
+            legend.text.size = 1.3,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", text.size = 1.5, size = 3, position=c("RIGHT", "TOP")) +
+  tm_scale_bar(position=c("LEFT", "BOTTOM"), text.size=1.2) +
+  tm_grid(labels.size = 1,alpha =0.2)
+```
+
+```{r}
+# Check the unique values in the fiscal_year column
+unique(drug_data_sf$fiscal_year)
+
+# Set tmap mode to plot
+tmap_mode("plot")
+
+# Function to create map by year and offense type
+create_maps_by_year <- function(data, offense_type) {
+  
+  # Filter the data by offense type
+  filtered_data <- data %>%
+    filter(types_of_drug_offenses == offense_type) %>%
+    select_if(~ any(!is.na(.)))  # Remove columns that are entirely NA
+  
+  # Get unique years
+  years <- unique(filtered_data$fiscal_year)
+  
+  # List to store maps
+  map_list <- list()
+  
+  # Loop over each year and create a map for that year
+  for (year in years) {
+    # Filter data by year
+    year_data <- filtered_data %>%
+      filter(fiscal_year == year)
+    
+    # Create the map for this year
+    map <- tm_shape(year_data) +
+      tm_polygons("no_cases",  # Assuming 'no_cases' holds the values
+                  title = paste(offense_type, "Cases in", year), 
+                  palette = ifelse(offense_type == "trafficking_cases", "Reds", "Blues"), 
+                  style = "jenks") +
+      tm_layout(title = paste(offense_type, "Cases in", year),
+                frame = FALSE) +
+      tm_borders()
+    
+    # Add the map to the list
+    map_list[[as.character(year)]] <- map
+  }
+  
+  return(map_list)
+}
+
+# Create maps for trafficking cases by year
+trafficking_maps <- create_maps_by_year(merged_data, "trafficking_cases")
+
+# Create maps for possession with intent to distribute cases by year
+possession_maps <- create_maps_by_year(merged_data, "possession_with_intent_to_distribute_cases")
+
+# Arrange trafficking maps side by side
+tmap_arrange(trafficking_maps[[1]], trafficking_maps[[2]], trafficking_maps[[3]],
+             trafficking_maps[[4]], trafficking_maps[[5]], trafficking_maps[[6]])
+
+# Arrange possession maps side by side
+tmap_arrange(possession_maps[[1]], possession_maps[[2]], possession_maps[[3]],
+             possession_maps[[4]], possession_maps[[5]], possession_maps[[6]])
+
+```
+
+```{r}
+trafficking_cases_nb_q <- st_contiguity(trafficking_cases_data_2022, queen=TRUE)
+
+summary(trafficking_cases_nb_q)
+```
+
+```{r}
+possession_cases_nb_q <- st_contiguity(possession_with_intent_to_distribute_cases_data_2022, queen=TRUE)
+
+summary(possession_cases_nb_q)
+```
+
+```{r}
+no_neighbor_indices <- which(sapply(nb_q, function(x) all(x == 0)))
+
+# Print the indices of provinces with no neighbors
+print(no_neighbor_indices)
+
+no_neighbor_pcode <- paste0("TH", no_neighbor_indices)
+
+# Print the resulting ADM1_PCODE for the province with no neighbors
+print(no_neighbor_pcode)
+
+# Find the corresponding province name based on the ADM1_PCODE
+province_name <- adm1$ADM1_EN[adm1$ADM1_PCODE == no_neighbor_pcode]
+
+# Print the province name
+print(province_name)
+```
+
+## **Computing Row-Standardised Weight Matrix**
+
+Next, we need to assign spatial weights to each neighboring polygon.
+
+[`st_weights()`](https://rdrr.io/cran/sfdep/man/st_weights.html) function from `sfdep` pacakge can be used to supplement a neighbour list with spatial weights based on the chosen coding scheme. There are as least 5 different coding scheme styles supported by this function:
+
+-   `B` is the basic binary coding
+
+-   `W` is row standardised (sums over all links to n)
+
+-   `C` is globally standardised (sums over all links to n)
+
+-   `U` is equal to C divided by the number of neighbours (sums over all links to unity)
+
+-   `S` is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. (1999) (sums over all links to n).
+
+In this study, we will use row-standardised weight matrix (style=`"W"`). Row standardisation of a matrix ensure that the sum of the values across each row add up to 1. This is accomplished by assigning the fraction 1/(# of neighbors) to each neighboring county then summing the weighted income values. Row standardisation ensures that all weights are between 0 and 1. This facilities the interpretation of operation with the weights matrix as an averaging of neighboring values, and allows for the spatial parameter used in our analyses to be comparable between models.
+
+```{r}
+# Check for isolated provinces
+isolated_provinces <- which(card(trafficking_cases_nb_q) == 0)
+
+if(length(isolated_provinces) > 0) {
+  print("The following provinces have no neighbors:")
+  print(isolated_provinces)
+} else {
+  print("No isolated provinces found.")
+}
+
+# Create a neighbors list based on shared borders with zero.policy set to TRUE
+trafficking_cases_wm_rs <- st_weights(trafficking_cases_nb_q, style = "W")
+
+
+# Create a neighbors list based on shared borders
+# trafficking_cases_wm_rs <- st_weights(trafficking_cases_nb_q, style="W")
+```
+
+```{r}
+# Check for isolated provinces
+isolated_provinces <- which(card(possession_cases_nb_q) == 0)
+
+if(length(isolated_provinces) > 0) {
+  print("The following provinces have no neighbors:")
+  print(isolated_provinces)
+} else {
+  print("No isolated provinces found.")
+}
+
+# Create a neighbors list based on shared borders with zero.policy set to TRUE
+possession_cases_wm_rs <- st_weights(possession_cases_nb_q, style = "W", allow_zero = TRUE)
+```
+
+We will mutate the newly created neighbour list object `possession_cases_nb_q` and weight matrix `possession_cases_wm_rs` into our existing `possession_with_intent_to_distribute_cases_data_2022`. The result will be a new object, which we will call `wm_q`.
+
+```{r}
+# Step 1: Extract the non-geometry columns (excluding 'geometry' column)
+non_geometry_data <- possession_with_intent_to_distribute_cases_data_2022 %>%
+  st_set_geometry(NULL)  # Temporarily remove the geometry for distinct operation
+
+# Step 2: Perform distinct operation on non-geometrical data (ensure 77 provinces)
+province_level_data <- non_geometry_data %>%
+  distinct(ADM1_EN, .keep_all = TRUE)  # Keep distinct rows by province
+
+# Step 3: Join the geometries back from the original dataset (to keep the geometry column)
+province_level_data <- province_level_data %>%
+  left_join(select(possession_with_intent_to_distribute_cases_data_2022, ADM1_EN, geometry), by = "ADM1_EN")
+
+# Step 4: Convert it back to sf object
+province_level_data <- st_as_sf(province_level_data)
+
+# Step 5: Create the neighbors list and weight matrix with zero policy
+# Create neighbor list
+nb_q <- st_contiguity(province_level_data, queen = TRUE)
+
+wt_q <- st_weights(nb_q, style = "W")
+
+# # Step 3: Manually identify Region 67 as having no neighbors
+# # We know from the nb_q object that Region 67 has no neighbors
+# no_neighbor_indices <- 67  # Region 67 has no neighbors
+
+# nb_q_filtered <- nb_q[-no_neighbor_indices]  # Filter the neighbor list
+# wt_q_filtered <- wt_q[-no_neighbor_indices]  # Filter the weight matrix
+
+# # Step 6: Add the neighbor list and weight matrix to the province-level data
+# wm_q <- province_level_data %>%
+#   mutate(nb = nb_q,  # Neighbor list (should have 77 entries)
+#          wt = wt_q,  # Weight matrix (should have 77 entries)
+#          .before = 1)
+# 
+
+# 
+# # Step 4: Remove Region 67 from both the dataset and neighbor list
+# wm_q_filtered <- province_level_data[-no_neighbor_indices, ]  # Keep regions with neighbors
 
 ```
 
 ## **Global Spatial Autocorrelation (Moran's I)**
 
-Now, we calculate Moran's I to detect whether the spatial distribution of drug use cases is random or exhibits spatial clustering.
+## **Global Moran’s** I
+
+### **Computing Global Moran’s** I
+
+Moran’s I is the correlation coefficient for the relationship between a variable and its neighbouring values. Moran’s I describes how features differ from the values in the study area as a whole and quantifies how similar each region is with its neighbors and averages all these assessments. Moran’s I values usually range from –1 to 1. We can test spatial autocorrelation by following these hypotheses:
+
+-   **Null Hypothesis** H0:I=E[I]. This suggests there is no spatial autocorrelation.
+
+-   **Alternative Hypothesis** H1:I≠E[I]. This indicates the presence of spatial autocorrelation.
 
 ```{r}
-# Perform global spatial autocorrelation using Moran's I
-global_moran <- calculate_moran(drug_abuse_sf)
-print(global_moran)
-
+moranI <- global_moran(wm_q_filtered$no_cases,
+                       wm_q_filtered$nb,
+                       wm_q_filtered$wt)
 ```
+
+### **Global Moran’s I Test**
+
+The Global Moran's I test allows us to assess the strength and significance of spatial autocorrelation. We'll use the `global_moran_test()` function to formally test if the observed spatial autocorrelation is statistically significant.
+
+#### Hypotheses for Global Moran’s I Test:
+
+-   **Null Hypothesis (H₀)**: There is no spatial autocorrelation (Moran’s I = 0).
+
+-   **Alternative Hypothesis (H₁)**: There is positive spatial autocorrelation (Moran’s I \> 0).
+
+In this analysis, we are primarily interested in testing for positive spatial autocorrelation, where provinces with similar numbers of drug-related offenses are spatially clustered. We set `alternative = "greater"` to reflect this.
+
+```{r}
+no_neighbor_indices <- which(sapply(nb_q, length) == 0)
+
+# Step 2: Exclude these regions from the analysis
+wm_q_filtered <- wm_q[-no_neighbor_indices, ]
+
+moranI_test <- moranI_test <- spdep::moran.test(province_level_data$no_cases, wt_q , alternative = "greater", zero.policy = TRUE)
+```
+
+### **Analysis & Discussion**:
+
+1.  The **Moran’s I statistic** is **0.4682**, which is positive and significantly different from the expected value under the null hypothesis of -0.0039. This suggests that there is positive spatial autocorrelation in the number of drug-related offenses in Thailand.
+
+2.  The **p-value** is **\<2.2e-16**, which is less than 0.05, indicating that the observed spatial pattern is very unlikely to be the result of random chance. Therefore, we reject the null hypothesis and conclude that there is significant spatial autocorrelation.
+
+3.  **Conclusion**: There is significant positive spatial autocorrelation in the data, meaning that provinces with similar numbers of drug offenses tend to cluster geographically.
 
 ## **Local Spatial Autocorrelation (Local Moran’s I)**
 
@@ -124,7 +518,7 @@ Next, we perform local spatial autocorrelation to detect clusters and hotspots u
 
 ```{r}
 # Perform local spatial autocorrelation using Local Moran's I
-local_moran <- calculate_local_moran(drug_abuse_sf)
+local_moran <- calculate_local_moran(wm_q)
 plot(local_moran)
 
 ```

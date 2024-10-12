@@ -218,7 +218,7 @@ print(missing_provinces)
 
 Now that the data is merged, it’s ready for further spatial analysis such as global and local spatial autocorrelation, visualization, or clustering.
 
-### Check if data is in `sf`  format for Visualization
+### Check if data is in `sf` format for Visualization
 
 We’ll primarily work with the **`sf`** object for visualization, but convert it to **`sp`** for spatial autocorrelation tasks.
 
@@ -324,10 +324,10 @@ create_maps_by_year <- function(data, offense_type) {
 }
 
 # Create maps for trafficking cases by year
-trafficking_maps <- create_maps_by_year(merged_data, "trafficking_cases")
+trafficking_maps <- create_maps_by_year(drug_data_sf, "trafficking_cases")
 
 # Create maps for possession with intent to distribute cases by year
-possession_maps <- create_maps_by_year(merged_data, "possession_with_intent_to_distribute_cases")
+possession_maps <- create_maps_by_year(drug_data_sf, "possession_with_intent_to_distribute_cases")
 
 # Arrange trafficking maps side by side
 tmap_arrange(trafficking_maps[[1]], trafficking_maps[[2]], trafficking_maps[[3]],
@@ -340,33 +340,19 @@ tmap_arrange(possession_maps[[1]], possession_maps[[2]], possession_maps[[3]],
 ```
 
 ```{r}
-trafficking_cases_nb_q <- st_contiguity(trafficking_cases_data_2022, queen=TRUE)
+# Apply a small buffer to the dataset to create neighbors for isolated regions
+buffered_data <- st_buffer(trafficking_cases_data_2022, dist = 100)  # 100 meters buffer, adjust as necessary
+
+trafficking_cases_nb_q <- st_contiguity(buffered_data, queen=TRUE)
 
 summary(trafficking_cases_nb_q)
 ```
 
 ```{r}
-possession_cases_nb_q <- st_contiguity(possession_with_intent_to_distribute_cases_data_2022, queen=TRUE)
+ buffered_data <- st_buffer(possession_with_intent_to_distribute_cases_data_2022, dist = 100) 
+possession_cases_nb_q <- st_contiguity(buffered_data, queen=TRUE)
 
 summary(possession_cases_nb_q)
-```
-
-```{r}
-no_neighbor_indices <- which(sapply(nb_q, function(x) all(x == 0)))
-
-# Print the indices of provinces with no neighbors
-print(no_neighbor_indices)
-
-no_neighbor_pcode <- paste0("TH", no_neighbor_indices)
-
-# Print the resulting ADM1_PCODE for the province with no neighbors
-print(no_neighbor_pcode)
-
-# Find the corresponding province name based on the ADM1_PCODE
-province_name <- adm1$ADM1_EN[adm1$ADM1_PCODE == no_neighbor_pcode]
-
-# Print the province name
-print(province_name)
 ```
 
 ## **Computing Row-Standardised Weight Matrix**
@@ -418,52 +404,10 @@ if(length(isolated_provinces) > 0) {
 }
 
 # Create a neighbors list based on shared borders with zero.policy set to TRUE
-possession_cases_wm_rs <- st_weights(possession_cases_nb_q, style = "W", allow_zero = TRUE)
+possession_cases_wm_rs <- st_weights(possession_cases_nb_q, style = "W")
 ```
 
 We will mutate the newly created neighbour list object `possession_cases_nb_q` and weight matrix `possession_cases_wm_rs` into our existing `possession_with_intent_to_distribute_cases_data_2022`. The result will be a new object, which we will call `wm_q`.
-
-```{r}
-# Step 1: Extract the non-geometry columns (excluding 'geometry' column)
-non_geometry_data <- possession_with_intent_to_distribute_cases_data_2022 %>%
-  st_set_geometry(NULL)  # Temporarily remove the geometry for distinct operation
-
-# Step 2: Perform distinct operation on non-geometrical data (ensure 77 provinces)
-province_level_data <- non_geometry_data %>%
-  distinct(ADM1_EN, .keep_all = TRUE)  # Keep distinct rows by province
-
-# Step 3: Join the geometries back from the original dataset (to keep the geometry column)
-province_level_data <- province_level_data %>%
-  left_join(select(possession_with_intent_to_distribute_cases_data_2022, ADM1_EN, geometry), by = "ADM1_EN")
-
-# Step 4: Convert it back to sf object
-province_level_data <- st_as_sf(province_level_data)
-
-# Step 5: Create the neighbors list and weight matrix with zero policy
-# Create neighbor list
-nb_q <- st_contiguity(province_level_data, queen = TRUE)
-
-wt_q <- st_weights(nb_q, style = "W")
-
-# # Step 3: Manually identify Region 67 as having no neighbors
-# # We know from the nb_q object that Region 67 has no neighbors
-# no_neighbor_indices <- 67  # Region 67 has no neighbors
-
-# nb_q_filtered <- nb_q[-no_neighbor_indices]  # Filter the neighbor list
-# wt_q_filtered <- wt_q[-no_neighbor_indices]  # Filter the weight matrix
-
-# # Step 6: Add the neighbor list and weight matrix to the province-level data
-# wm_q <- province_level_data %>%
-#   mutate(nb = nb_q,  # Neighbor list (should have 77 entries)
-#          wt = wt_q,  # Weight matrix (should have 77 entries)
-#          .before = 1)
-# 
-
-# 
-# # Step 4: Remove Region 67 from both the dataset and neighbor list
-# wm_q_filtered <- province_level_data[-no_neighbor_indices, ]  # Keep regions with neighbors
-
-```
 
 ## **Global Spatial Autocorrelation (Moran's I)**
 
@@ -473,14 +417,28 @@ wt_q <- st_weights(nb_q, style = "W")
 
 Moran’s I is the correlation coefficient for the relationship between a variable and its neighbouring values. Moran’s I describes how features differ from the values in the study area as a whole and quantifies how similar each region is with its neighbors and averages all these assessments. Moran’s I values usually range from –1 to 1. We can test spatial autocorrelation by following these hypotheses:
 
--   **Null Hypothesis** H0:I=E[I]. This suggests there is no spatial autocorrelation.
+-   **Null Hypothesis** H0:I=E\[I\]. This suggests there is no spatial autocorrelation.
 
--   **Alternative Hypothesis** H1:I≠E[I]. This indicates the presence of spatial autocorrelation.
+-   **Alternative Hypothesis** H1:I≠E\[I\]. This indicates the presence of spatial autocorrelation.
 
 ```{r}
-moranI <- global_moran(wm_q_filtered$no_cases,
-                       wm_q_filtered$nb,
-                       wm_q_filtered$wt)
+# Perform global Moran's I test for trafficking cases
+global_moran_test_trafficking <- global_moran_test(trafficking_cases_data_2022$no_cases, 
+                                                   trafficking_cases_nb_q, 
+                                                   trafficking_cases_wm_rs, 
+                                                   alternative = "greater")
+
+# Output the results
+print(global_moran_test_trafficking)
+
+# Perform global Moran's I test for possession cases
+global_moran_test_possession <- global_moran_test(possession_with_intent_to_distribute_cases_data_2022$no_cases, 
+                                                  possession_cases_nb_q, 
+                                                  possession_cases_wm_rs, 
+                                                  alternative = "greater")
+
+# Output the results
+print(global_moran_test_possession)
 ```
 
 ### **Global Moran’s I Test**
@@ -496,56 +454,258 @@ The Global Moran's I test allows us to assess the strength and significance of s
 In this analysis, we are primarily interested in testing for positive spatial autocorrelation, where provinces with similar numbers of drug-related offenses are spatially clustered. We set `alternative = "greater"` to reflect this.
 
 ```{r}
-no_neighbor_indices <- which(sapply(nb_q, length) == 0)
+# Global Moran's I Test for trafficking cases
+moranI_trafficking <- global_moran_test(
+  trafficking_cases_data_2022$no_cases,  # Numeric variable (drug-related offenses)
+  trafficking_cases_nb_q,  # Neighbors list object
+  trafficking_cases_wm_rs,  # Weights list
+  alternative = "greater"
+)
 
-# Step 2: Exclude these regions from the analysis
-wm_q_filtered <- wm_q[-no_neighbor_indices, ]
+# Global Moran's I Test for possession with intent to distribute cases
+moranI_possession <- global_moran_test(
+  possession_with_intent_to_distribute_cases_data_2022$no_cases,  # Numeric variable (drug-related offenses)
+  possession_cases_nb_q,  # Neighbors list object
+  possession_cases_wm_rs,  # Weights list
+  alternative = "greater"
+)
 
-moranI_test <- moranI_test <- spdep::moran.test(province_level_data$no_cases, wt_q , alternative = "greater", zero.policy = TRUE)
+# Output the test results
+print(moranI_trafficking)
+print(moranI_possession)
 ```
 
 ### **Analysis & Discussion**:
 
-1.  The **Moran’s I statistic** is **0.4682**, which is positive and significantly different from the expected value under the null hypothesis of -0.0039. This suggests that there is positive spatial autocorrelation in the number of drug-related offenses in Thailand.
+#### Trafficking Cases:
 
-2.  The **p-value** is **\<2.2e-16**, which is less than 0.05, indicating that the observed spatial pattern is very unlikely to be the result of random chance. Therefore, we reject the null hypothesis and conclude that there is significant spatial autocorrelation.
+1.  The Moran’s I statistic for **trafficking cases** is **0.1703**, which is positive and significantly different from the expected value of **-0.0132** under the null hypothesis of no spatial autocorrelation. This indicates a moderate positive spatial autocorrelation, meaning that provinces with similar numbers of trafficking-related offenses tend to be geographically clustered.
 
-3.  **Conclusion**: There is significant positive spatial autocorrelation in the data, meaning that provinces with similar numbers of drug offenses tend to cluster geographically.
+    -   **Moran's I Statistic**: 0.1703
+
+    -   **Expected Value**: -0.0132
+
+    -   **Variance**: 0.0063
+
+    -   **p-value**: 0.0106
+
+    The p-value of **0.0106** is less than the significance threshold of 0.05, indicating that the observed clustering is statistically significant and unlikely to occur by chance. Therefore, we reject the null hypothesis and conclude that provinces with similar levels of trafficking offenses are spatially clustered.
+
+    This suggests that trafficking operations are not randomly dispersed but concentrated in certain regions, likely influenced by geographic factors such as proximity to borders, trafficking routes, or urban centers.
+
+    #### **Possession with Intent to Distribute Cases**:
+
+    The Moran’s I statistic for **possession with intent to distribute cases** is **0.2276**, which is also positive and significantly different from the expected value of **-0.0132**. This suggests a stronger positive spatial autocorrelation compared to the trafficking cases, meaning that provinces with similar numbers of possession cases are even more likely to be geographically clustered.
+
+    -   **Moran's I Statistic**: 0.2276
+
+    -   **Expected Value**: -0.0132
+
+    -   **Variance**: 0.0065
+
+    -   **p-value**: 0.0014
+
+    The p-value of **0.0014** is well below the 0.05 significance level, confirming that the spatial clustering of possession cases is highly significant. We reject the null hypothesis and conclude that the observed spatial pattern is not random.
+
+    This result implies that drug distribution networks, as indicated by possession with intent to distribute cases, are heavily concentrated in specific regions, possibly influenced by local demand, supply chains, or enforcement activities.
+
+    Both **trafficking cases** and **possession with intent to distribute cases** show significant positive spatial autocorrelation. This means that provinces with similar numbers of drug-related offenses tend to be geographically close to one another rather than randomly distributed across Thailand.
+
+    -   **Trafficking cases** exhibit moderate clustering, suggesting the presence of concentrated trafficking routes.
+
+    -   **Possession cases** show stronger clustering, indicating specific regions where drug distribution networks are more active.
+
+    These findings provide valuable insights for law enforcement and policy-makers in identifying high-risk areas and focusing resources on regions where drug-related activities are concentrated.
 
 ## **Local Spatial Autocorrelation (Local Moran’s I)**
 
-Next, we perform local spatial autocorrelation to detect clusters and hotspots using Local Moran's I.
+Local Indicators of Spatial Association (LISA), such as Local Moran’s I, are used to identify spatial clusters and outliers by examining the relationship between a location and its neighbors. While global Moran's I gives us an overall sense of spatial autocorrelation, local Moran's I allows us to detect spatial patterns at a more granular level.
+
+In this context, we will examine whether provinces in Thailand exhibit spatial clustering for two types of drug-related offenses: **trafficking cases** and **possession with intent to distribute cases**. This can help identify regions with significant concentrations of offenses and detect spatial outliers where a province's offense levels deviate from its neighbors.
 
 ```{r}
-# Perform local spatial autocorrelation using Local Moran's I
-local_moran <- calculate_local_moran(wm_q)
-plot(local_moran)
+# Create the contiguity-based neighbor list for trafficking and possession cases
+# trafficking_cases_nb_q <- st_contiguity(trafficking_cases_data_2022, queen=TRUE)
+# possession_cases_nb_q <- st_contiguity(possession_with_intent_to_distribute_cases_data_2022, queen=TRUE)
+# 
+# # Convert the neighbor lists into row-standardized spatial weights
+# trafficking_cases_wm_rs <- st_weights(trafficking_cases_nb_q, style = "W")
+# possession_cases_wm_rs <- st_weights(possession_cases_nb_q, style = "W")
+
 
 ```
 
-## **Results**
+### **Computing Local Moran’s I**
 
-### **Global Moran’s I**
-
-The results from the global spatial autocorrelation analysis indicate that drug abuse in Thailand shows a statistically significant clustering pattern, as indicated by a positive Moran’s I value.
+We use the `local_moran()` function from the `sfdep` package to compute the Local Moran’s I statistic for each province based on the number of drug-related cases.
 
 ```{r}
-# Plot results of Moran's I
-ggplot(drug_abuse_sf) + 
-  geom_sf(aes(fill = global_moran)) + 
-  labs(title = "Global Moran's I for Drug Abuse Cases (2017-2022)")
+# Local Moran's I for trafficking cases
+local_moran_trafficking <- local_moran(trafficking_cases_data_2022$no_cases, trafficking_cases_nb_q, trafficking_cases_wm_rs)
+
+# Local Moran's I for possession with intent to distribute cases
+local_moran_possession <- local_moran(possession_with_intent_to_distribute_cases_data_2022$no_cases, possession_cases_nb_q, possession_cases_wm_rs)
+
+# View the results (Ii: Local Moran's I, E.Ii: expected value, Var.Ii: variance, Z.Ii: standard deviate, Pr(z): p-value)
+head(local_moran_trafficking)
+head(local_moran_possession)
 
 ```
 
-### **Local Moran’s I**
+The output provides:
 
-The local spatial autocorrelation analysis revealed significant clusters and hotspots in specific provinces, particularly in the northern regions, near the Golden Triangle.
+-   **Ii**: The Local Moran’s I statistic for each province.
+
+-   **E.Ii**: The expected value under the null hypothesis of no spatial autocorrelation.
+
+-   **Var.Ii**: The variance under the null hypothesis.
+
+-   **Z.Ii**: The Z-score for testing significance.
+
+-   **Pr(z)**: The p-value for testing whether the observed spatial pattern is significantly different from random.
+
+### **Identifying Clusters and Outliers**
+
+We categorize the provinces into different types of spatial clusters based on the sign and significance of Local Moran’s I. Provinces can be classified as:
+
+-   **High-High**: High offense rates surrounded by other high-rate areas.
+
+-   **Low-Low**: Low offense rates surrounded by other low-rate areas.
+
+-   **High-Low**: High offense rates surrounded by low-rate areas (spatial outliers).
+
+-   **Low-High**: Low offense rates surrounded by high-rate areas (spatial outliers).
 
 ```{r}
-# Plot the spatial distribution of Local Moran's I results
-ggplot(drug_abuse_sf) + 
-  geom_sf(aes(fill = local_moran)) + 
-  labs(title = "Local Moran's I - Drug Abuse Hotspots (2017-2022)")
+# Append local Moran's I results to the trafficking data
+trafficking_cases_data_2022 <- cbind(trafficking_cases_data_2022, local_moran_trafficking)
+
+# Append local Moran's I results to the possession data
+possession_with_intent_to_distribute_cases_data_2022 <- cbind(possession_with_intent_to_distribute_cases_data_2022, local_moran_possession)
+
+# Rename the columns for better readability
+colnames(trafficking_cases_data_2022)[ncol(trafficking_cases_data_2022) - 4:ncol(trafficking_cases_data_2022)] <- c("Ii", "E.Ii", "Var.Ii", "Z.Ii", "Pr.z")
+colnames(possession_with_intent_to_distribute_cases_data_2022)[ncol(possession_with_intent_to_distribute_cases_data_2022) - 4:ncol(possession_with_intent_to_distribute_cases_data_2022)] <- c("Ii", "E.Ii", "Var.Ii", "Z.Ii", "Pr.z")
+
+```
+
+### **Mapping Local Moran’s I and p-values**
+
+We visualize the spatial patterns by creating choropleth maps of the Local Moran’s I statistics and the corresponding p-values.
+
+Trafficking Cases:
+
+```{r}
+# Mapping Local Moran's I for trafficking cases
+tm_shape(trafficking_cases_data_2022) +
+  tm_fill(col = "Ii", style = "pretty", palette = "RdBu", title = "Local Moran's I") +
+  tm_borders(alpha = 0.5)
+
+# Mapping p-values for trafficking cases
+tm_shape(trafficking_cases_data_2022) +
+  tm_fill(col = "Pr.z", style = "pretty", palette = "-Blues", title = "p-values") +
+  tm_borders(alpha = 0.5)
+
+
+```
+
+Possession:
+
+```{r}
+# Similarly for possession cases
+tm_shape(possession_with_intent_to_distribute_cases_data_2022) +
+  tm_fill(col = "Ii", style = "pretty", palette = "RdBu", title = "Local Moran's I") +
+  tm_borders(alpha = 0.5)
+
+tm_shape(possession_with_intent_to_distribute_cases_data_2022) +
+  tm_fill(col = "Pr.z", style = "pretty", palette = "-Blues", title = "p-values") +
+  tm_borders(alpha = 0.5)
+```
+
+#### **Analysis & Discussion**
+
+From the Local Moran's I analysis:
+
+-   **Trafficking Cases**: The map of Local Moran’s I for trafficking cases indicates significant **high-high clusters** in certain regions, where provinces with high trafficking rates are surrounded by other provinces with similarly high rates. This suggests regional hotspots for drug trafficking activities. Some **low-low clusters** are also identified, indicating areas with consistently low rates of trafficking offenses.
+
+-   **Possession with Intent to Distribute Cases**: The Local Moran’s I map for possession cases reveals more pronounced **high-high clusters**, indicating strong spatial clustering of possession-related offenses. These regions may represent major drug distribution hubs, as indicated by the concentration of possession cases.
+
+The p-value maps show that the identified clusters are statistically significant, providing strong evidence of localized spatial autocorrelation. This information can help law enforcement agencies target specific regions for more intensive interventions to disrupt drug-related activities.
+
+Local Moran’s I reveals significant spatial clusters for both trafficking and possession-related offenses, suggesting that drug-related activities are not randomly distributed across Thailand. Certain provinces act as hotspots for trafficking and possession, warranting targeted enforcement efforts.
+
+### **Classifying LISA Results**
+
+We'll classify each province based on its Local Moran's I values (positive/negative) and its p-value (significance level). We will create a new column `quadrant` to store these categories.
+
+```{r}
+# # Convert the neighbor list for trafficking cases into listw format with row-standardized weights
+# trafficking_cases_wm_rs <- nb2listw(trafficking_cases_nb_q, style = "W", zero.policy = TRUE)
+# 
+# # Convert the neighbor list for possession cases into listw format with row-standardized weights
+# possession_cases_wm_rs <- nb2listw(possession_cases_nb_q, style = "W", zero.policy = TRUE)
+# 
+# # Local Moran's I for trafficking cases
+# local_moran_trafficking <- localmoran(trafficking_cases_data_2022$no_cases, trafficking_cases_wm_rs)
+# 
+# # Local Moran's I for possession with intent to distribute cases
+# local_moran_possession <- localmoran(possession_with_intent_to_distribute_cases_data_2022$no_cases, possession_cases_wm_rs)
+# 
+# head(local_moran_trafficking)
+# head(local_moran_possession)
+```
+
+```{r}
+
+# Prepare the quadrant classification for trafficking cases
+# quadrant_trafficking <- vector(mode = "numeric", length = nrow(local_moran_trafficking))
+# 
+# # Lagging the variable of interest (drug cases)
+# trafficking_cases_data_2022$lag_cases <- lag.listw(trafficking_cases_wm_rs, trafficking_cases_data_2022$no_cases)
+# 
+# # Classify the local Moran's I results into the quadrants (categories)
+# DV_trafficking <- trafficking_cases_data_2022$lag_cases - mean(trafficking_cases_data_2022$lag_cases)
+# LM_I_trafficking <- local_moran_trafficking[,1]  # Ii value
+# 
+# signif <- 0.05  # significance threshold
+# 
+# # Assign categories
+# quadrant_trafficking[DV_trafficking < 0 & LM_I_trafficking > 0] <- 1  # Low-High
+# quadrant_trafficking[DV_trafficking > 0 & LM_I_trafficking < 0] <- 2  # High-Low
+# quadrant_trafficking[DV_trafficking < 0 & LM_I_trafficking < 0] <- 3  # Low-Low
+# quadrant_trafficking[DV_trafficking > 0 & LM_I_trafficking > 0] <- 4  # High-High
+# 
+# # Non-significant regions
+# quadrant_trafficking[local_moran_trafficking[,5] > signif] <- 0  # Insignificant
+# 
+# # Append to the dataset
+# trafficking_cases_data_2022$quadrant <- quadrant_trafficking
+
+```
+
+You can repeat the above steps for the possession with intent to distribute cases:
+
+```{r}
+# # Prepare the quadrant classification for possession cases
+# quadrant_possession <- vector(mode = "numeric", length = nrow(local_moran_possession))
+# 
+# possession_with_intent_to_distribute_cases_data_2022$lag_cases <- lag.listw(possession_cases_wm_rs, possession_with_intent_to_distribute_cases_data_2022$no_cases)
+# 
+# # Classify the local Moran's I results into quadrants
+# DV_possession <- possession_with_intent_to_distribute_cases_data_2022$lag_cases - mean(possession_with_intent_to_distribute_cases_data_2022$lag_cases)
+# LM_I_possession <- local_moran_possession[,1]
+# 
+# # Assign categories
+# quadrant_possession[DV_possession < 0 & LM_I_possession > 0] <- 1  # Low-High
+# quadrant_possession[DV_possession > 0 & LM_I_possession < 0] <- 2  # High-Low
+# quadrant_possession[DV_possession < 0 & LM_I_possession < 0] <- 3  # Low-Low
+# quadrant_possession[DV_possession > 0 & LM_I_possession > 0] <- 4  # High-High
+# 
+# # Non-significant regions
+# quadrant_possession[local_moran_possession[,5] > signif] <- 0  # Insignificant
+# 
+# # Append to the dataset
+# possession_with_intent_to_distribute_cases_data_2022$quadrant <- quadrant_possession
 
 ```
 

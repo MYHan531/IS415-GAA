@@ -1,7 +1,7 @@
 ---
 title: "Take-Home Exercise 2: Geospatial Analytics for Social Good - Thailand Drug Abuse Case Study"
 title-block-banner: true
-author: "Your Name"
+author: "Han Ming Yan"
 date: 2024-10-08
 date-modified: "last-modified"
 format:
@@ -127,7 +127,7 @@ tm_shape(adm1)+
 
 ## **Importing Aspatial Data**
 
-In this section, `read_csv()` of **sf** package will be used to import the csv file into R environment. The output is R dataframe class.
+In this section, we use the `read_csv()` function from the **`readr`** package to import the aspatial dataset containing drug offenses in Thailand into the R environment. The output of this step is a data frame.
 
 ```{r}
 drug_data <- read_csv("data/aspatial/thai_drug_offenses_2017_2022.csv")
@@ -136,13 +136,17 @@ drug_data <- read_csv("data/aspatial/thai_drug_offenses_2017_2022.csv")
 
 ## **Spatial Data Wrangling**
 
-Next, we merge the drug abuse data with the spatial dataset for Thailand provinces to prepare it for analysis.
+After importing the drug abuse data, we need to merge it with the spatial dataset containing Thailand's provincial boundaries. This step prepares the data for spatial analysis.
 
 ### Inspect and Clean the Data
 
-Before merging, inspect the data to make sure the columns that should match (province names) are consistent in both datasets. If needed, clean and standardize the province names to avoid issues during the join.
+Before merging the datasets, it's important to ensure consistency between the province names in both the spatial and aspatial datasets. If there are discrepancies in the naming conventions, we must clean and standardize the province names to avoid mismatches.
 
-The importance of cleaning the data is crucial for this assessment, in the aspatial dataset, the naming of the provinces in english is slightly different from the geospatial dataset, for example: "Loburi" in drug_data is actually "Lop Buri" in adm1. If we do a left join, they will treat them as two separate locations instead of the intended one.
+For instance, in the aspatial dataset, some province names differ from the names in the spatial dataset. For example:
+
+-   "Loburi" in `drug_data` should be standardized to "Lop Buri" in `adm1`.
+
+Here’s how we clean the data by updating inconsistent province names:
 
 ```{r}
 library(dplyr)
@@ -157,7 +161,9 @@ drug_data <- drug_data %>%
 head(drug_data)
 ```
 
-Then, merge the `drug_data` with the `adm1` shapefile using the `left_join()` function, with `province_en` from `drug_data` matching `ADM1_EN` from the `adm1` dataset.
+### **Merging Data**
+
+After cleaning the province names, we can merge the `drug_data` with the `adm1` shapefile. This step ensures that both the drug offense data and the provincial boundaries are linked together.
 
 ```{r}
 # Inspect unique province names in both datasets
@@ -178,31 +184,13 @@ unique(drug_data_sf$ADM1_EN)
 
 ```
 
-List down the unique types of drug offences, if there are NA values in it, remove them:
+### **Handling Missing Data**
+
+Sometimes, not all provinces may match perfectly during the join, leading to missing values. It's important to check for any missing data and handle it appropriately.
 
 ```{r}
 unique(drug_data_sf$types_of_drug_offenses)
 ```
-
-For this analysis, I would focus on the **“trafficking_cases”** and **“possession_with_intent_to_distribute_cases”**. Here's the reasoning behind this choice:
-
-### Justification for Choosing:
-
-1.  **Trafficking Cases**:
-
-    -   **Relevance**: Drug trafficking is often a key indicator of organized crime and the movement of narcotics across regions. It reflects not only local consumption but also broader patterns of supply and demand, often linked to cross-border activities. In the case of Thailand, which is geographically near the **Golden Triangle** (a major drug-producing region), analyzing trafficking cases can help highlight key transit routes or areas where trafficking is prevalent.
-
-    -   **Informative**: By focusing on trafficking, we can uncover patterns in regions that might be heavily involved in the movement of drugs, either within Thailand or across borders. This can help identify provinces that serve as major conduits for the drug trade.
-
-2.  **Possession with Intent to Distribute Cases**:
-
-    -   **Relevance**: This category indicates individuals caught with drugs intended for sale or distribution, which can be an early-stage indicator of trafficking operations within regions. It helps identify not just end-users but those involved in drug distribution networks.
-
-    -   **Informative**: Combining this category with trafficking cases gives a more complete picture of drug-related activity, as it includes both small-scale distribution and larger trafficking operations.
-
-### Analysis Workflow:
-
-We will focus on visualizing and analyzing both **trafficking cases** and **possession with intent to distribute cases** to see how they are spatially distributed across provinces. This will help identify high-risk areas for drug movement and distribution within Thailand.
 
 ### Handle Missing Data
 
@@ -214,24 +202,45 @@ missing_provinces <- drug_data_sf %>% filter(is.na(fiscal_year))
 print(missing_provinces)
 ```
 
-### Preparing the Spatial Data for Analysis
+### **Preparing Data for Spatial Analysis**
 
-Now that the data is merged, it’s ready for further spatial analysis such as global and local spatial autocorrelation, visualization, or clustering.
+Now that the data is merged, it's ready for further analysis, including global and local spatial autocorrelation, visualization, and clustering.
 
-### Check if data is in `sf` format for Visualization
+### **Ensuring Data is in sf Format**
 
-We’ll primarily work with the **`sf`** object for visualization, but convert it to **`sp`** for spatial autocorrelation tasks.
+For visualization purposes, the data should be in `sf` format. We check and verify that the `drug_data_sf` object is in the correct format for further processing.
 
 ```{r}
-# Use sf for visualization
 class(drug_data_sf)
 ```
+
+## **Analysis Workflow**
+
+In this section, we will focus on visualizing and analyzing two key types of drug-related offenses: **trafficking cases** and **possession with intent to distribute cases**. Here's why we chose these categories:
+
+### **Justification for Choosing These Categories:**
+
+1.  **Trafficking Cases:**
+
+    -   **Relevance**: Drug trafficking is often associated with organized crime and the movement of narcotics across regions. Given Thailand's proximity to the Golden Triangle, a major drug-producing region, analyzing trafficking cases can help uncover transit routes and regions heavily involved in the drug trade.
+
+    -   **Insight**: This analysis can reveal provinces that play a major role in the drug trade, both within and outside Thailand.
+
+2.  **Possession with Intent to Distribute Cases:**
+
+    -   **Relevance**: This category focuses on individuals caught with drugs intended for sale, reflecting distribution networks. It helps identify not just end-users but those involved in drug distribution operations.
+
+    -   **Insight**: Combining this with trafficking data gives a comprehensive picture of both large-scale trafficking operations and smaller distribution networks.
 
 ### Example Workflow:
 
 1.  **Data Exploration**: Explore the number of drug cases across provinces and over time.
 
 2.  **Data Aggregation**: You might want to aggregate the data by `fiscal_year` to calculate statistics such as total drug cases per province over the years.
+
+### **Aggregating Data by Year and Offense Type**
+
+We can also break down the data by year and create visualizations for both **trafficking cases** and **possession with intent to distribute cases** across multiple years.
 
 ```{r}
 # Function to split the data by offense type and year
@@ -260,7 +269,9 @@ split_data_by_year_type(drug_data_sf, "possession_with_intent_to_distribute_case
 split_data_by_year_type(drug_data_sf, "trafficking_cases")
 ```
 
-Plotting the Map for example (possession_data_2022, this is what we will use for Global and Local Moran's I Spatial autocorrelation)
+### **Visualizing Drug Offense Data**
+
+We will now create maps to visualize the spatial distribution of these two categories of drug offenses across Thailand for specific years. This helps identify high-risk areas for trafficking and drug distribution.
 
 ```{r}
 # Create map for possession with intent to distribute cases in 2012
@@ -339,6 +350,12 @@ tmap_arrange(possession_maps[[1]], possession_maps[[2]], possession_maps[[3]],
 
 ```
 
+### **Handling Isolated Regions with Spatial Buffers**
+
+In spatial analysis, some regions may not have immediate neighbors due to their geographic isolation, which can affect the spatial autocorrelation analysis. To address this, we apply a **100-meter buffer** to the dataset. This ensures that isolated regions are included in the contiguity analysis by artificially creating nearby neighbors through small adjustments in their spatial boundaries.
+
+The buffered data is then used to compute **Queen contiguity neighbors**, which identify neighboring provinces that share borders, including those created by the buffer. This method helps ensure that no regions are left without neighbors, which is crucial for calculating spatial weights and conducting further spatial analysis.
+
 ```{r}
 # Apply a small buffer to the dataset to create neighbors for isolated regions
 buffered_data <- st_buffer(trafficking_cases_data_2022, dist = 100)  # 100 meters buffer, adjust as necessary
@@ -348,6 +365,8 @@ trafficking_cases_nb_q <- st_contiguity(buffered_data, queen=TRUE)
 summary(trafficking_cases_nb_q)
 ```
 
+Similarly, we apply the same process for **possession with intent to distribute cases**:
+
 ```{r}
  buffered_data <- st_buffer(possession_with_intent_to_distribute_cases_data_2022, dist = 100) 
 possession_cases_nb_q <- st_contiguity(buffered_data, queen=TRUE)
@@ -355,9 +374,13 @@ possession_cases_nb_q <- st_contiguity(buffered_data, queen=TRUE)
 summary(possession_cases_nb_q)
 ```
 
+By using buffered data and Queen contiguity, we ensure that all regions, including those that may have been isolated, are part of the spatial neighbor analysis. This enhances the robustness of our spatial autocorrelation and clustering results.
+
 ## **Computing Row-Standardised Weight Matrix**
 
-Next, we need to assign spatial weights to each neighboring polygon.
+In spatial autocorrelation analysis, spatial weights are assigned to neighboring polygons to represent the relationships between them. In this study, we use a row-standardized weight matrix. Row standardization ensures that the sum of the weights for each polygon equals 1, making it easier to interpret spatial relationships as an average of neighboring values.
+
+We begin by checking for any provinces that might not have neighbors (isolated provinces), and then assign spatial weights using the **Queen contiguity method**.
 
 [`st_weights()`](https://rdrr.io/cran/sfdep/man/st_weights.html) function from `sfdep` pacakge can be used to supplement a neighbour list with spatial weights based on the chosen coding scheme. There are as least 5 different coding scheme styles supported by this function:
 
@@ -634,90 +657,13 @@ The p-value maps show that the identified clusters are statistically significant
 
 Local Moran’s I reveals significant spatial clusters for both trafficking and possession-related offenses, suggesting that drug-related activities are not randomly distributed across Thailand. Certain provinces act as hotspots for trafficking and possession, warranting targeted enforcement efforts.
 
-### **Classifying LISA Results**
-
-We'll classify each province based on its Local Moran's I values (positive/negative) and its p-value (significance level). We will create a new column `quadrant` to store these categories.
-
-```{r}
-# # Convert the neighbor list for trafficking cases into listw format with row-standardized weights
-# trafficking_cases_wm_rs <- nb2listw(trafficking_cases_nb_q, style = "W", zero.policy = TRUE)
-# 
-# # Convert the neighbor list for possession cases into listw format with row-standardized weights
-# possession_cases_wm_rs <- nb2listw(possession_cases_nb_q, style = "W", zero.policy = TRUE)
-# 
-# # Local Moran's I for trafficking cases
-# local_moran_trafficking <- localmoran(trafficking_cases_data_2022$no_cases, trafficking_cases_wm_rs)
-# 
-# # Local Moran's I for possession with intent to distribute cases
-# local_moran_possession <- localmoran(possession_with_intent_to_distribute_cases_data_2022$no_cases, possession_cases_wm_rs)
-# 
-# head(local_moran_trafficking)
-# head(local_moran_possession)
-```
-
-```{r}
-
-# Prepare the quadrant classification for trafficking cases
-# quadrant_trafficking <- vector(mode = "numeric", length = nrow(local_moran_trafficking))
-# 
-# # Lagging the variable of interest (drug cases)
-# trafficking_cases_data_2022$lag_cases <- lag.listw(trafficking_cases_wm_rs, trafficking_cases_data_2022$no_cases)
-# 
-# # Classify the local Moran's I results into the quadrants (categories)
-# DV_trafficking <- trafficking_cases_data_2022$lag_cases - mean(trafficking_cases_data_2022$lag_cases)
-# LM_I_trafficking <- local_moran_trafficking[,1]  # Ii value
-# 
-# signif <- 0.05  # significance threshold
-# 
-# # Assign categories
-# quadrant_trafficking[DV_trafficking < 0 & LM_I_trafficking > 0] <- 1  # Low-High
-# quadrant_trafficking[DV_trafficking > 0 & LM_I_trafficking < 0] <- 2  # High-Low
-# quadrant_trafficking[DV_trafficking < 0 & LM_I_trafficking < 0] <- 3  # Low-Low
-# quadrant_trafficking[DV_trafficking > 0 & LM_I_trafficking > 0] <- 4  # High-High
-# 
-# # Non-significant regions
-# quadrant_trafficking[local_moran_trafficking[,5] > signif] <- 0  # Insignificant
-# 
-# # Append to the dataset
-# trafficking_cases_data_2022$quadrant <- quadrant_trafficking
-
-```
-
-You can repeat the above steps for the possession with intent to distribute cases:
-
-```{r}
-# # Prepare the quadrant classification for possession cases
-# quadrant_possession <- vector(mode = "numeric", length = nrow(local_moran_possession))
-# 
-# possession_with_intent_to_distribute_cases_data_2022$lag_cases <- lag.listw(possession_cases_wm_rs, possession_with_intent_to_distribute_cases_data_2022$no_cases)
-# 
-# # Classify the local Moran's I results into quadrants
-# DV_possession <- possession_with_intent_to_distribute_cases_data_2022$lag_cases - mean(possession_with_intent_to_distribute_cases_data_2022$lag_cases)
-# LM_I_possession <- local_moran_possession[,1]
-# 
-# # Assign categories
-# quadrant_possession[DV_possession < 0 & LM_I_possession > 0] <- 1  # Low-High
-# quadrant_possession[DV_possession > 0 & LM_I_possession < 0] <- 2  # High-Low
-# quadrant_possession[DV_possession < 0 & LM_I_possession < 0] <- 3  # Low-Low
-# quadrant_possession[DV_possession > 0 & LM_I_possession > 0] <- 4  # High-High
-# 
-# # Non-significant regions
-# quadrant_possession[local_moran_possession[,5] > signif] <- 0  # Insignificant
-# 
-# # Append to the dataset
-# possession_with_intent_to_distribute_cases_data_2022$quadrant <- quadrant_possession
-
-```
-
 ## **Discussion**
 
-From the analysis, it is clear that drug abuse cases in Thailand are not randomly distributed but tend to cluster in specific regions. The clusters are primarily concentrated in the northern provinces, likely influenced by the country's proximity to the Golden Triangle, a major drug production site.
+The Local Moran's I analysis reveals that drug abuse cases in Thailand are spatially clustered rather than randomly distributed. **Trafficking cases** show significant high-high clusters in specific regions, suggesting regional hotspots for drug trafficking activities. Similarly, **possession with intent to distribute cases** demonstrate even stronger clustering, indicating potential hubs for drug distribution. The p-value maps confirm that these clusters are statistically significant, providing evidence of spatial autocorrelation. These results highlight key areas where drug-related activities are concentrated, offering valuable insights for targeted law enforcement interventions.
 
-Over time, the analysis shows that hotspots in drug use have shifted slightly but remain concentrated around key transportation routes, indicating potential trafficking patterns.
+### **Conclusion**
 
-## **Conclusion**
-
-This geospatial analysis highlights the non-random, clustered nature of drug abuse cases across Thailand. The application of global and local spatial autocorrelation methods provides insight into the spatial dynamics of the drug problem, with certain provinces consistently exhibiting high drug use levels. These findings have important implications for law enforcement and public health interventions.
+This geospatial analysis identifies distinct spatial clusters of drug abuse across Thailand, with northern provinces near the Golden Triangle emerging as key hotspots. Over time, the patterns of drug use have remained concentrated along critical transportation routes, pointing to underlying trafficking networks. The application of global and local Moran's I methods reveals that drug abuse is not evenly distributed, with certain provinces consistently showing elevated levels of offenses. These findings are crucial for informing targeted policy and intervention strategies to combat drug-related crimes.
 
 ## **References**
 

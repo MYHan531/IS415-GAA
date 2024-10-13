@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Your Name">
+<meta name="author" content="Han Ming Yan">
 <meta name="dcterms.date" content="2024-10-08">
 <meta name="keywords" content="Geospatial Analysis, Drug Abuse, Spatial Autocorrelation, Thailand, Clusters, Hotspots">
 
@@ -4936,7 +4936,7 @@ font-family: inherit;
       <div>
       <div class="quarto-title-meta-heading">Author</div>
       <div class="quarto-title-meta-contents">
-               <p>Your Name </p>
+               <p>Han Ming Yan </p>
             </div>
     </div>
       
@@ -4950,7 +4950,7 @@ font-family: inherit;
       <div>
       <div class="quarto-title-meta-heading">Modified</div>
       <div class="quarto-title-meta-contents">
-        <p class="date-modified">October 12, 2024</p>
+        <p class="date-modified">October 13, 2024</p>
       </div>
     </div>
       
@@ -4988,30 +4988,38 @@ font-family: inherit;
   <li><a href="#spatial-data-wrangling" id="toc-spatial-data-wrangling" class="nav-link" data-scroll-target="#spatial-data-wrangling"><span class="header-section-number">1.5</span> <strong>Spatial Data Wrangling</strong></a>
   <ul class="collapse">
   <li><a href="#inspect-and-clean-the-data" id="toc-inspect-and-clean-the-data" class="nav-link" data-scroll-target="#inspect-and-clean-the-data"><span class="header-section-number">1.5.1</span> Inspect and Clean the Data</a></li>
-  <li><a href="#justification-for-choosing" id="toc-justification-for-choosing" class="nav-link" data-scroll-target="#justification-for-choosing"><span class="header-section-number">1.5.2</span> Justification for Choosing:</a></li>
-  <li><a href="#analysis-workflow" id="toc-analysis-workflow" class="nav-link" data-scroll-target="#analysis-workflow"><span class="header-section-number">1.5.3</span> Analysis Workflow:</a></li>
+  <li><a href="#merging-data" id="toc-merging-data" class="nav-link" data-scroll-target="#merging-data"><span class="header-section-number">1.5.2</span> <strong>Merging Data</strong></a></li>
+  <li><a href="#handling-missing-data" id="toc-handling-missing-data" class="nav-link" data-scroll-target="#handling-missing-data"><span class="header-section-number">1.5.3</span> <strong>Handling Missing Data</strong></a></li>
   <li><a href="#handle-missing-data" id="toc-handle-missing-data" class="nav-link" data-scroll-target="#handle-missing-data"><span class="header-section-number">1.5.4</span> Handle Missing Data</a></li>
-  <li><a href="#preparing-the-spatial-data-for-analysis" id="toc-preparing-the-spatial-data-for-analysis" class="nav-link" data-scroll-target="#preparing-the-spatial-data-for-analysis"><span class="header-section-number">1.5.5</span> Preparing the Spatial Data for Analysis</a></li>
-  <li><a href="#check-if-data-is-in-sf-format-for-visualization" id="toc-check-if-data-is-in-sf-format-for-visualization" class="nav-link" data-scroll-target="#check-if-data-is-in-sf-format-for-visualization"><span class="header-section-number">1.5.6</span> Check if data is in <code>sf</code> format for Visualization</a></li>
-  <li><a href="#example-workflow" id="toc-example-workflow" class="nav-link" data-scroll-target="#example-workflow"><span class="header-section-number">1.5.7</span> Example Workflow:</a></li>
+  <li><a href="#preparing-data-for-spatial-analysis" id="toc-preparing-data-for-spatial-analysis" class="nav-link" data-scroll-target="#preparing-data-for-spatial-analysis"><span class="header-section-number">1.5.5</span> <strong>Preparing Data for Spatial Analysis</strong></a></li>
+  <li><a href="#ensuring-data-is-in-sf-format" id="toc-ensuring-data-is-in-sf-format" class="nav-link" data-scroll-target="#ensuring-data-is-in-sf-format"><span class="header-section-number">1.5.6</span> <strong>Ensuring Data is in sf Format</strong></a></li>
   </ul></li>
-  <li><a href="#computing-row-standardised-weight-matrix" id="toc-computing-row-standardised-weight-matrix" class="nav-link" data-scroll-target="#computing-row-standardised-weight-matrix"><span class="header-section-number">1.6</span> <strong>Computing Row-Standardised Weight Matrix</strong></a></li>
-  <li><a href="#global-spatial-autocorrelation-morans-i" id="toc-global-spatial-autocorrelation-morans-i" class="nav-link" data-scroll-target="#global-spatial-autocorrelation-morans-i"><span class="header-section-number">1.7</span> <strong>Global Spatial Autocorrelation (Moran’s I)</strong></a></li>
-  <li><a href="#global-morans-i" id="toc-global-morans-i" class="nav-link" data-scroll-target="#global-morans-i"><span class="header-section-number">1.8</span> <strong>Global Moran’s</strong> I</a>
+  <li><a href="#analysis-workflow" id="toc-analysis-workflow" class="nav-link" data-scroll-target="#analysis-workflow"><span class="header-section-number">1.6</span> <strong>Analysis Workflow</strong></a>
   <ul class="collapse">
-  <li><a href="#computing-global-morans-i" id="toc-computing-global-morans-i" class="nav-link" data-scroll-target="#computing-global-morans-i"><span class="header-section-number">1.8.1</span> <strong>Computing Global Moran’s</strong> I</a></li>
-  <li><a href="#global-morans-i-test" id="toc-global-morans-i-test" class="nav-link" data-scroll-target="#global-morans-i-test"><span class="header-section-number">1.8.2</span> <strong>Global Moran’s I Test</strong></a></li>
-  <li><a href="#analysis-discussion" id="toc-analysis-discussion" class="nav-link" data-scroll-target="#analysis-discussion"><span class="header-section-number">1.8.3</span> <strong>Analysis &amp; Discussion</strong>:</a></li>
+  <li><a href="#justification-for-choosing-these-categories" id="toc-justification-for-choosing-these-categories" class="nav-link" data-scroll-target="#justification-for-choosing-these-categories"><span class="header-section-number">1.6.1</span> <strong>Justification for Choosing These Categories:</strong></a></li>
+  <li><a href="#example-workflow" id="toc-example-workflow" class="nav-link" data-scroll-target="#example-workflow"><span class="header-section-number">1.6.2</span> Example Workflow:</a></li>
+  <li><a href="#aggregating-data-by-year-and-offense-type" id="toc-aggregating-data-by-year-and-offense-type" class="nav-link" data-scroll-target="#aggregating-data-by-year-and-offense-type"><span class="header-section-number">1.6.3</span> <strong>Aggregating Data by Year and Offense Type</strong></a></li>
+  <li><a href="#visualizing-drug-offense-data" id="toc-visualizing-drug-offense-data" class="nav-link" data-scroll-target="#visualizing-drug-offense-data"><span class="header-section-number">1.6.4</span> <strong>Visualizing Drug Offense Data</strong></a></li>
+  <li><a href="#handling-isolated-regions-with-spatial-buffers" id="toc-handling-isolated-regions-with-spatial-buffers" class="nav-link" data-scroll-target="#handling-isolated-regions-with-spatial-buffers"><span class="header-section-number">1.6.5</span> <strong>Handling Isolated Regions with Spatial Buffers</strong></a></li>
   </ul></li>
-  <li><a href="#local-spatial-autocorrelation-local-morans-i" id="toc-local-spatial-autocorrelation-local-morans-i" class="nav-link" data-scroll-target="#local-spatial-autocorrelation-local-morans-i"><span class="header-section-number">1.9</span> <strong>Local Spatial Autocorrelation (Local Moran’s I)</strong></a>
+  <li><a href="#computing-row-standardised-weight-matrix" id="toc-computing-row-standardised-weight-matrix" class="nav-link" data-scroll-target="#computing-row-standardised-weight-matrix"><span class="header-section-number">1.7</span> <strong>Computing Row-Standardised Weight Matrix</strong></a></li>
+  <li><a href="#global-spatial-autocorrelation-morans-i" id="toc-global-spatial-autocorrelation-morans-i" class="nav-link" data-scroll-target="#global-spatial-autocorrelation-morans-i"><span class="header-section-number">1.8</span> <strong>Global Spatial Autocorrelation (Moran’s I)</strong></a></li>
+  <li><a href="#global-morans-i" id="toc-global-morans-i" class="nav-link" data-scroll-target="#global-morans-i"><span class="header-section-number">1.9</span> <strong>Global Moran’s</strong> I</a>
   <ul class="collapse">
-  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i"><span class="header-section-number">1.9.1</span> <strong>Computing Local Moran’s I</strong></a></li>
-  <li><a href="#identifying-clusters-and-outliers" id="toc-identifying-clusters-and-outliers" class="nav-link" data-scroll-target="#identifying-clusters-and-outliers"><span class="header-section-number">1.9.2</span> <strong>Identifying Clusters and Outliers</strong></a></li>
-  <li><a href="#mapping-local-morans-i-and-p-values" id="toc-mapping-local-morans-i-and-p-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-and-p-values"><span class="header-section-number">1.9.3</span> <strong>Mapping Local Moran’s I and p-values</strong></a></li>
-  <li><a href="#classifying-lisa-results" id="toc-classifying-lisa-results" class="nav-link" data-scroll-target="#classifying-lisa-results"><span class="header-section-number">1.9.4</span> <strong>Classifying LISA Results</strong></a></li>
+  <li><a href="#computing-global-morans-i" id="toc-computing-global-morans-i" class="nav-link" data-scroll-target="#computing-global-morans-i"><span class="header-section-number">1.9.1</span> <strong>Computing Global Moran’s</strong> I</a></li>
+  <li><a href="#global-morans-i-test" id="toc-global-morans-i-test" class="nav-link" data-scroll-target="#global-morans-i-test"><span class="header-section-number">1.9.2</span> <strong>Global Moran’s I Test</strong></a></li>
+  <li><a href="#analysis-discussion" id="toc-analysis-discussion" class="nav-link" data-scroll-target="#analysis-discussion"><span class="header-section-number">1.9.3</span> <strong>Analysis &amp; Discussion</strong>:</a></li>
   </ul></li>
-  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">1.10</span> <strong>Discussion</strong></a></li>
-  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">1.11</span> <strong>Conclusion</strong></a></li>
+  <li><a href="#local-spatial-autocorrelation-local-morans-i" id="toc-local-spatial-autocorrelation-local-morans-i" class="nav-link" data-scroll-target="#local-spatial-autocorrelation-local-morans-i"><span class="header-section-number">1.10</span> <strong>Local Spatial Autocorrelation (Local Moran’s I)</strong></a>
+  <ul class="collapse">
+  <li><a href="#computing-local-morans-i" id="toc-computing-local-morans-i" class="nav-link" data-scroll-target="#computing-local-morans-i"><span class="header-section-number">1.10.1</span> <strong>Computing Local Moran’s I</strong></a></li>
+  <li><a href="#identifying-clusters-and-outliers" id="toc-identifying-clusters-and-outliers" class="nav-link" data-scroll-target="#identifying-clusters-and-outliers"><span class="header-section-number">1.10.2</span> <strong>Identifying Clusters and Outliers</strong></a></li>
+  <li><a href="#mapping-local-morans-i-and-p-values" id="toc-mapping-local-morans-i-and-p-values" class="nav-link" data-scroll-target="#mapping-local-morans-i-and-p-values"><span class="header-section-number">1.10.3</span> <strong>Mapping Local Moran’s I and p-values</strong></a></li>
+  </ul></li>
+  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion"><span class="header-section-number">1.11</span> <strong>Discussion</strong></a>
+  <ul class="collapse">
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">1.11.1</span> <strong>Conclusion</strong></a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">1.12</span> <strong>References</strong></a></li>
   </ul></li>
   </ul>
@@ -5188,7 +5196,7 @@ GEOGCRS[&quot;WGS 84&quot;,
 </section>
 <section id="importing-aspatial-data" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="importing-aspatial-data"><span class="header-section-number">1.4</span> <strong>Importing Aspatial Data</strong></h2>
-<p>In this section, <code>read_csv()</code> of <strong>sf</strong> package will be used to import the csv file into R environment. The output is R dataframe class.</p>
+<p>In this section, we use the <code>read_csv()</code> function from the <strong><code>readr</code></strong> package to import the aspatial dataset containing drug offenses in Thailand into the R environment. The output of this step is a data frame.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>drug_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;data/aspatial/thai_drug_offenses_2017_2022.csv&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -5206,11 +5214,15 @@ dbl (2): fiscal_year, no_cases
 </section>
 <section id="spatial-data-wrangling" class="level2" data-number="1.5">
 <h2 data-number="1.5" class="anchored" data-anchor-id="spatial-data-wrangling"><span class="header-section-number">1.5</span> <strong>Spatial Data Wrangling</strong></h2>
-<p>Next, we merge the drug abuse data with the spatial dataset for Thailand provinces to prepare it for analysis.</p>
+<p>After importing the drug abuse data, we need to merge it with the spatial dataset containing Thailand’s provincial boundaries. This step prepares the data for spatial analysis.</p>
 <section id="inspect-and-clean-the-data" class="level3" data-number="1.5.1">
 <h3 data-number="1.5.1" class="anchored" data-anchor-id="inspect-and-clean-the-data"><span class="header-section-number">1.5.1</span> Inspect and Clean the Data</h3>
-<p>Before merging, inspect the data to make sure the columns that should match (province names) are consistent in both datasets. If needed, clean and standardize the province names to avoid issues during the join.</p>
-<p>The importance of cleaning the data is crucial for this assessment, in the aspatial dataset, the naming of the provinces in english is slightly different from the geospatial dataset, for example: “Loburi” in drug_data is actually “Lop Buri” in adm1. If we do a left join, they will treat them as two separate locations instead of the intended one.</p>
+<p>Before merging the datasets, it’s important to ensure consistency between the province names in both the spatial and aspatial datasets. If there are discrepancies in the naming conventions, we must clean and standardize the province names to avoid mismatches.</p>
+<p>For instance, in the aspatial dataset, some province names differ from the names in the spatial dataset. For example:</p>
+<ul>
+<li>“Loburi” in <code>drug_data</code> should be standardized to “Lop Buri” in <code>adm1</code>.</li>
+</ul>
+<p>Here’s how we clean the data by updating inconsistent province names:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -5234,7 +5246,10 @@ dbl (2): fiscal_year, no_cases
 6        2017 drug_use_cases              727 ลพบุรี          Lop Buri            </code></pre>
 </div>
 </div>
-<p>Then, merge the <code>drug_data</code> with the <code>adm1</code> shapefile using the <code>left_join()</code> function, with <code>province_en</code> from <code>drug_data</code> matching <code>ADM1_EN</code> from the <code>adm1</code> dataset.</p>
+</section>
+<section id="merging-data" class="level3" data-number="1.5.2">
+<h3 data-number="1.5.2" class="anchored" data-anchor-id="merging-data"><span class="header-section-number">1.5.2</span> <strong>Merging Data</strong></h3>
+<p>After cleaning the province names, we can merge the <code>drug_data</code> with the <code>adm1</code> shapefile. This step ensures that both the drug offense data and the provincial boundaries are linked together.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect unique province names in both datasets</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># unique(drug_data$province_en)</span></span>
@@ -5292,7 +5307,10 @@ dbl (2): fiscal_year, no_cases
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># drug_data_sf &lt;- drug_data_sf %&gt;%</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   filter(ADM1_EN != &quot;Phetchabun&quot;)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>List down the unique types of drug offences, if there are NA values in it, remove them:</p>
+</section>
+<section id="handling-missing-data" class="level3" data-number="1.5.3">
+<h3 data-number="1.5.3" class="anchored" data-anchor-id="handling-missing-data"><span class="header-section-number">1.5.3</span> <strong>Handling Missing Data</strong></h3>
+<p>Sometimes, not all provinces may match perfectly during the join, leading to missing values. It’s important to check for any missing data and handle it appropriately.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(drug_data_sf<span class="sc">$</span>types_of_drug_offenses)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -5314,26 +5332,6 @@ dbl (2): fiscal_year, no_cases
 [16] &quot;suspects_in_conspiracy_cases&quot;                          </code></pre>
 </div>
 </div>
-<p>For this analysis, I would focus on the <strong>“trafficking_cases”</strong> and <strong>“possession_with_intent_to_distribute_cases”</strong>. Here’s the reasoning behind this choice:</p>
-</section>
-<section id="justification-for-choosing" class="level3" data-number="1.5.2">
-<h3 data-number="1.5.2" class="anchored" data-anchor-id="justification-for-choosing"><span class="header-section-number">1.5.2</span> Justification for Choosing:</h3>
-<ol type="1">
-<li><p><strong>Trafficking Cases</strong>:</p>
-<ul>
-<li><p><strong>Relevance</strong>: Drug trafficking is often a key indicator of organized crime and the movement of narcotics across regions. It reflects not only local consumption but also broader patterns of supply and demand, often linked to cross-border activities. In the case of Thailand, which is geographically near the <strong>Golden Triangle</strong> (a major drug-producing region), analyzing trafficking cases can help highlight key transit routes or areas where trafficking is prevalent.</p></li>
-<li><p><strong>Informative</strong>: By focusing on trafficking, we can uncover patterns in regions that might be heavily involved in the movement of drugs, either within Thailand or across borders. This can help identify provinces that serve as major conduits for the drug trade.</p></li>
-</ul></li>
-<li><p><strong>Possession with Intent to Distribute Cases</strong>:</p>
-<ul>
-<li><p><strong>Relevance</strong>: This category indicates individuals caught with drugs intended for sale or distribution, which can be an early-stage indicator of trafficking operations within regions. It helps identify not just end-users but those involved in drug distribution networks.</p></li>
-<li><p><strong>Informative</strong>: Combining this category with trafficking cases gives a more complete picture of drug-related activity, as it includes both small-scale distribution and larger trafficking operations.</p></li>
-</ul></li>
-</ol>
-</section>
-<section id="analysis-workflow" class="level3" data-number="1.5.3">
-<h3 data-number="1.5.3" class="anchored" data-anchor-id="analysis-workflow"><span class="header-section-number">1.5.3</span> Analysis Workflow:</h3>
-<p>We will focus on visualizing and analyzing both <strong>trafficking cases</strong> and <strong>possession with intent to distribute cases</strong> to see how they are spatially distributed across provinces. This will help identify high-risk areas for drug movement and distribution within Thailand.</p>
 </section>
 <section id="handle-missing-data" class="level3" data-number="1.5.4">
 <h3 data-number="1.5.4" class="anchored" data-anchor-id="handle-missing-data"><span class="header-section-number">1.5.4</span> Handle Missing Data</h3>
@@ -5357,27 +5355,49 @@ Geodetic CRS:  WGS 84
 </div>
 </div>
 </section>
-<section id="preparing-the-spatial-data-for-analysis" class="level3" data-number="1.5.5">
-<h3 data-number="1.5.5" class="anchored" data-anchor-id="preparing-the-spatial-data-for-analysis"><span class="header-section-number">1.5.5</span> Preparing the Spatial Data for Analysis</h3>
-<p>Now that the data is merged, it’s ready for further spatial analysis such as global and local spatial autocorrelation, visualization, or clustering.</p>
+<section id="preparing-data-for-spatial-analysis" class="level3" data-number="1.5.5">
+<h3 data-number="1.5.5" class="anchored" data-anchor-id="preparing-data-for-spatial-analysis"><span class="header-section-number">1.5.5</span> <strong>Preparing Data for Spatial Analysis</strong></h3>
+<p>Now that the data is merged, it’s ready for further analysis, including global and local spatial autocorrelation, visualization, and clustering.</p>
 </section>
-<section id="check-if-data-is-in-sf-format-for-visualization" class="level3" data-number="1.5.6">
-<h3 data-number="1.5.6" class="anchored" data-anchor-id="check-if-data-is-in-sf-format-for-visualization"><span class="header-section-number">1.5.6</span> Check if data is in <code>sf</code> format for Visualization</h3>
-<p>We’ll primarily work with the <strong><code>sf</code></strong> object for visualization, but convert it to <strong><code>sp</code></strong> for spatial autocorrelation tasks.</p>
+<section id="ensuring-data-is-in-sf-format" class="level3" data-number="1.5.6">
+<h3 data-number="1.5.6" class="anchored" data-anchor-id="ensuring-data-is-in-sf-format"><span class="header-section-number">1.5.6</span> <strong>Ensuring Data is in sf Format</strong></h3>
+<p>For visualization purposes, the data should be in <code>sf</code> format. We check and verify that the <code>drug_data_sf</code> object is in the correct format for further processing.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Use sf for visualization</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(drug_data_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(drug_data_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] &quot;sf&quot;         &quot;data.frame&quot;</code></pre>
 </div>
 </div>
 </section>
-<section id="example-workflow" class="level3" data-number="1.5.7">
-<h3 data-number="1.5.7" class="anchored" data-anchor-id="example-workflow"><span class="header-section-number">1.5.7</span> Example Workflow:</h3>
+</section>
+<section id="analysis-workflow" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="analysis-workflow"><span class="header-section-number">1.6</span> <strong>Analysis Workflow</strong></h2>
+<p>In this section, we will focus on visualizing and analyzing two key types of drug-related offenses: <strong>trafficking cases</strong> and <strong>possession with intent to distribute cases</strong>. Here’s why we chose these categories:</p>
+<section id="justification-for-choosing-these-categories" class="level3" data-number="1.6.1">
+<h3 data-number="1.6.1" class="anchored" data-anchor-id="justification-for-choosing-these-categories"><span class="header-section-number">1.6.1</span> <strong>Justification for Choosing These Categories:</strong></h3>
+<ol type="1">
+<li><p><strong>Trafficking Cases:</strong></p>
+<ul>
+<li><p><strong>Relevance</strong>: Drug trafficking is often associated with organized crime and the movement of narcotics across regions. Given Thailand’s proximity to the Golden Triangle, a major drug-producing region, analyzing trafficking cases can help uncover transit routes and regions heavily involved in the drug trade.</p></li>
+<li><p><strong>Insight</strong>: This analysis can reveal provinces that play a major role in the drug trade, both within and outside Thailand.</p></li>
+</ul></li>
+<li><p><strong>Possession with Intent to Distribute Cases:</strong></p>
+<ul>
+<li><p><strong>Relevance</strong>: This category focuses on individuals caught with drugs intended for sale, reflecting distribution networks. It helps identify not just end-users but those involved in drug distribution operations.</p></li>
+<li><p><strong>Insight</strong>: Combining this with trafficking data gives a comprehensive picture of both large-scale trafficking operations and smaller distribution networks.</p></li>
+</ul></li>
+</ol>
+</section>
+<section id="example-workflow" class="level3" data-number="1.6.2">
+<h3 data-number="1.6.2" class="anchored" data-anchor-id="example-workflow"><span class="header-section-number">1.6.2</span> Example Workflow:</h3>
 <ol type="1">
 <li><p><strong>Data Exploration</strong>: Explore the number of drug cases across provinces and over time.</p></li>
 <li><p><strong>Data Aggregation</strong>: You might want to aggregate the data by <code>fiscal_year</code> to calculate statistics such as total drug cases per province over the years.</p></li>
 </ol>
+</section>
+<section id="aggregating-data-by-year-and-offense-type" class="level3" data-number="1.6.3">
+<h3 data-number="1.6.3" class="anchored" data-anchor-id="aggregating-data-by-year-and-offense-type"><span class="header-section-number">1.6.3</span> <strong>Aggregating Data by Year and Offense Type</strong></h3>
+<p>We can also break down the data by year and create visualizations for both <strong>trafficking cases</strong> and <strong>possession with intent to distribute cases</strong> across multiple years.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to split the data by offense type and year</span></span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>split_data_by_year_type <span class="ot">&lt;-</span> <span class="cf">function</span>(data, offense_type) {</span>
@@ -5404,7 +5424,10 @@ Geodetic CRS:  WGS 84
 <span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a><span class="co"># for trafficking cases</span></span>
 <span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a><span class="fu">split_data_by_year_type</span>(drug_data_sf, <span class="st">&quot;trafficking_cases&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Plotting the Map for example (possession_data_2022, this is what we will use for Global and Local Moran’s I Spatial autocorrelation)</p>
+</section>
+<section id="visualizing-drug-offense-data" class="level3" data-number="1.6.4">
+<h3 data-number="1.6.4" class="anchored" data-anchor-id="visualizing-drug-offense-data"><span class="header-section-number">1.6.4</span> <strong>Visualizing Drug Offense Data</strong></h3>
+<p>We will now create maps to visualize the spatial distribution of these two categories of drug offenses across Thailand for specific years. This helps identify high-risk areas for trafficking and drug distribution.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create map for possession with intent to distribute cases in 2012</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(possession_with_intent_to_distribute_cases_data_2022) <span class="sc">+</span></span>
@@ -5630,6 +5653,11 @@ tm_shape prior to each of them).</code></pre>
 </div>
 </div>
 </div>
+</section>
+<section id="handling-isolated-regions-with-spatial-buffers" class="level3" data-number="1.6.5">
+<h3 data-number="1.6.5" class="anchored" data-anchor-id="handling-isolated-regions-with-spatial-buffers"><span class="header-section-number">1.6.5</span> <strong>Handling Isolated Regions with Spatial Buffers</strong></h3>
+<p>In spatial analysis, some regions may not have immediate neighbors due to their geographic isolation, which can affect the spatial autocorrelation analysis. To address this, we apply a <strong>100-meter buffer</strong> to the dataset. This ensures that isolated regions are included in the contiguity analysis by artificially creating nearby neighbors through small adjustments in their spatial boundaries.</p>
+<p>The buffered data is then used to compute <strong>Queen contiguity neighbors</strong>, which identify neighboring provinces that share borders, including those created by the buffer. This method helps ensure that no regions are left without neighbors, which is crucial for calculating spatial weights and conducting further spatial analysis.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply a small buffer to the dataset to create neighbors for isolated regions</span></span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>buffered_data <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(trafficking_cases_data_2022, <span class="at">dist =</span> <span class="dv">100</span>)  <span class="co"># 100 meters buffer, adjust as necessary</span></span>
@@ -5653,6 +5681,7 @@ Link number distribution:
 29 with 9 links</code></pre>
 </div>
 </div>
+<p>Similarly, we apply the same process for <strong>possession with intent to distribute cases</strong>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a> buffered_data <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(possession_with_intent_to_distribute_cases_data_2022, <span class="at">dist =</span> <span class="dv">100</span>) </span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>possession_cases_nb_q <span class="ot">&lt;-</span> <span class="fu">st_contiguity</span>(buffered_data, <span class="at">queen=</span><span class="cn">TRUE</span>)</span>
@@ -5674,11 +5703,13 @@ Link number distribution:
 29 with 9 links</code></pre>
 </div>
 </div>
+<p>By using buffered data and Queen contiguity, we ensure that all regions, including those that may have been isolated, are part of the spatial neighbor analysis. This enhances the robustness of our spatial autocorrelation and clustering results.</p>
 </section>
 </section>
-<section id="computing-row-standardised-weight-matrix" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="computing-row-standardised-weight-matrix"><span class="header-section-number">1.6</span> <strong>Computing Row-Standardised Weight Matrix</strong></h2>
-<p>Next, we need to assign spatial weights to each neighboring polygon.</p>
+<section id="computing-row-standardised-weight-matrix" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="computing-row-standardised-weight-matrix"><span class="header-section-number">1.7</span> <strong>Computing Row-Standardised Weight Matrix</strong></h2>
+<p>In spatial autocorrelation analysis, spatial weights are assigned to neighboring polygons to represent the relationships between them. In this study, we use a row-standardized weight matrix. Row standardization ensures that the sum of the weights for each polygon equals 1, making it easier to interpret spatial relationships as an average of neighboring values.</p>
+<p>We begin by checking for any provinces that might not have neighbors (isolated provinces), and then assign spatial weights using the <strong>Queen contiguity method</strong>.</p>
 <p><a href="https://rdrr.io/cran/sfdep/man/st_weights.html"><code>st_weights()</code></a> function from <code>sfdep</code> pacakge can be used to supplement a neighbour list with spatial weights based on the chosen coding scheme. There are as least 5 different coding scheme styles supported by this function:</p>
 <ul>
 <li><p><code>B</code> is the basic binary coding</p></li>
@@ -5726,13 +5757,13 @@ Link number distribution:
 </div>
 <p>We will mutate the newly created neighbour list object <code>possession_cases_nb_q</code> and weight matrix <code>possession_cases_wm_rs</code> into our existing <code>possession_with_intent_to_distribute_cases_data_2022</code>. The result will be a new object, which we will call <code>wm_q</code>.</p>
 </section>
-<section id="global-spatial-autocorrelation-morans-i" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="global-spatial-autocorrelation-morans-i"><span class="header-section-number">1.7</span> <strong>Global Spatial Autocorrelation (Moran’s I)</strong></h2>
+<section id="global-spatial-autocorrelation-morans-i" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="global-spatial-autocorrelation-morans-i"><span class="header-section-number">1.8</span> <strong>Global Spatial Autocorrelation (Moran’s I)</strong></h2>
 </section>
-<section id="global-morans-i" class="level2" data-number="1.8">
-<h2 data-number="1.8" class="anchored" data-anchor-id="global-morans-i"><span class="header-section-number">1.8</span> <strong>Global Moran’s</strong> I</h2>
-<section id="computing-global-morans-i" class="level3" data-number="1.8.1">
-<h3 data-number="1.8.1" class="anchored" data-anchor-id="computing-global-morans-i"><span class="header-section-number">1.8.1</span> <strong>Computing Global Moran’s</strong> I</h3>
+<section id="global-morans-i" class="level2" data-number="1.9">
+<h2 data-number="1.9" class="anchored" data-anchor-id="global-morans-i"><span class="header-section-number">1.9</span> <strong>Global Moran’s</strong> I</h2>
+<section id="computing-global-morans-i" class="level3" data-number="1.9.1">
+<h3 data-number="1.9.1" class="anchored" data-anchor-id="computing-global-morans-i"><span class="header-section-number">1.9.1</span> <strong>Computing Global Moran’s</strong> I</h3>
 <p>Moran’s I is the correlation coefficient for the relationship between a variable and its neighbouring values. Moran’s I describes how features differ from the values in the study area as a whole and quantifies how similar each region is with its neighbors and averages all these assessments. Moran’s I values usually range from –1 to 1. We can test spatial autocorrelation by following these hypotheses:</p>
 <ul>
 <li><p><strong>Null Hypothesis</strong> H0:I=E[I]. This suggests there is no spatial autocorrelation.</p></li>
@@ -5783,8 +5814,8 @@ Moran I statistic       Expectation          Variance
 </div>
 </div>
 </section>
-<section id="global-morans-i-test" class="level3" data-number="1.8.2">
-<h3 data-number="1.8.2" class="anchored" data-anchor-id="global-morans-i-test"><span class="header-section-number">1.8.2</span> <strong>Global Moran’s I Test</strong></h3>
+<section id="global-morans-i-test" class="level3" data-number="1.9.2">
+<h3 data-number="1.9.2" class="anchored" data-anchor-id="global-morans-i-test"><span class="header-section-number">1.9.2</span> <strong>Global Moran’s I Test</strong></h3>
 <p>The Global Moran’s I test allows us to assess the strength and significance of spatial autocorrelation. We’ll use the <code>global_moran_test()</code> function to formally test if the observed spatial autocorrelation is statistically significant.</p>
 <section id="hypotheses-for-global-morans-i-test" class="level4">
 <h4 class="anchored" data-anchor-id="hypotheses-for-global-morans-i-test">Hypotheses for Global Moran’s I Test:</h4>
@@ -5842,8 +5873,8 @@ Moran I statistic       Expectation          Variance
 </div>
 </section>
 </section>
-<section id="analysis-discussion" class="level3" data-number="1.8.3">
-<h3 data-number="1.8.3" class="anchored" data-anchor-id="analysis-discussion"><span class="header-section-number">1.8.3</span> <strong>Analysis &amp; Discussion</strong>:</h3>
+<section id="analysis-discussion" class="level3" data-number="1.9.3">
+<h3 data-number="1.9.3" class="anchored" data-anchor-id="analysis-discussion"><span class="header-section-number">1.9.3</span> <strong>Analysis &amp; Discussion</strong>:</h3>
 <section id="trafficking-cases" class="level4">
 <h4 class="anchored" data-anchor-id="trafficking-cases">Trafficking Cases:</h4>
 <ol type="1">
@@ -5876,8 +5907,8 @@ Moran I statistic       Expectation          Variance
 </section>
 </section>
 </section>
-<section id="local-spatial-autocorrelation-local-morans-i" class="level2" data-number="1.9">
-<h2 data-number="1.9" class="anchored" data-anchor-id="local-spatial-autocorrelation-local-morans-i"><span class="header-section-number">1.9</span> <strong>Local Spatial Autocorrelation (Local Moran’s I)</strong></h2>
+<section id="local-spatial-autocorrelation-local-morans-i" class="level2" data-number="1.10">
+<h2 data-number="1.10" class="anchored" data-anchor-id="local-spatial-autocorrelation-local-morans-i"><span class="header-section-number">1.10</span> <strong>Local Spatial Autocorrelation (Local Moran’s I)</strong></h2>
 <p>Local Indicators of Spatial Association (LISA), such as Local Moran’s I, are used to identify spatial clusters and outliers by examining the relationship between a location and its neighbors. While global Moran’s I gives us an overall sense of spatial autocorrelation, local Moran’s I allows us to detect spatial patterns at a more granular level.</p>
 <p>In this context, we will examine whether provinces in Thailand exhibit spatial clustering for two types of drug-related offenses: <strong>trafficking cases</strong> and <strong>possession with intent to distribute cases</strong>. This can help identify regions with significant concentrations of offenses and detect spatial outliers where a province’s offense levels deviate from its neighbors.</p>
 <div class="cell">
@@ -5889,8 +5920,8 @@ Moran I statistic       Expectation          Variance
 <span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a><span class="co"># trafficking_cases_wm_rs &lt;- st_weights(trafficking_cases_nb_q, style = &quot;W&quot;)</span></span>
 <span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a><span class="co"># possession_cases_wm_rs &lt;- st_weights(possession_cases_nb_q, style = &quot;W&quot;)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="computing-local-morans-i" class="level3" data-number="1.9.1">
-<h3 data-number="1.9.1" class="anchored" data-anchor-id="computing-local-morans-i"><span class="header-section-number">1.9.1</span> <strong>Computing Local Moran’s I</strong></h3>
+<section id="computing-local-morans-i" class="level3" data-number="1.10.1">
+<h3 data-number="1.10.1" class="anchored" data-anchor-id="computing-local-morans-i"><span class="header-section-number">1.10.1</span> <strong>Computing Local Moran’s I</strong></h3>
 <p>We use the <code>local_moran()</code> function from the <code>sfdep</code> package to compute the Local Moran’s I statistic for each province based on the number of drug-related cases.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Local Moran&#39;s I for trafficking cases</span></span>
@@ -5902,37 +5933,37 @@ Moran I statistic       Expectation          Variance
 <span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a><span class="co"># View the results (Ii: Local Moran&#39;s I, E.Ii: expected value, Var.Ii: variance, Z.Ii: standard deviate, Pr(z): p-value)</span></span>
 <span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(local_moran_trafficking)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            ii          eii     var_ii         z_ii      p_ii p_ii_sim
-1 -0.216764189 -0.012147058 0.19387540 -0.464708528 0.6421402    0.788
-2  0.505498752 -0.014802230 0.27297759  0.995843629 0.3193261    0.296
-3 -0.005170613 -0.004412636 0.14518769 -0.001989257 0.9984128    0.776
-4  0.102651999  0.002984337 0.01429993  0.833464991 0.4045825    0.444
-5  0.158486860 -0.012703394 0.02308515  1.126711395 0.2598645    0.208
-6  0.144545046  0.005033525 0.03058490  0.797731127 0.4250265    0.452
+<pre><code>            ii           eii     var_ii        z_ii      p_ii p_ii_sim
+1 -0.216764189  0.0050928488 0.20161653 -0.49409463 0.6212393    0.764
+2  0.505498752  0.0104762082 0.31755228  0.87845063 0.3796992    0.344
+3 -0.005170613 -0.0118428021 0.13685415  0.01803596 0.9856102    0.836
+4  0.102651999  0.0003333857 0.01963148  0.73026101 0.4652307    0.504
+5  0.158486860 -0.0086054061 0.02172676  1.13359745 0.2569634    0.220
+6  0.144545046 -0.0016832203 0.03172519  0.82097368 0.4116613    0.488
   p_folded_sim   skewness  kurtosis      mean    median     pysal
-1        0.394  0.9484192 0.8237867  High-Low  High-Low  High-Low
-2        0.148  1.4366046 2.0425606 High-High High-High High-High
-3        0.388 -1.1196592 1.3229934   Low-Low  Low-High  Low-High
-4        0.224 -0.7253527 0.1807399   Low-Low  High-Low   Low-Low
-5        0.104 -0.9524524 1.1272920   Low-Low   Low-Low   Low-Low
-6        0.226 -0.9678581 0.7147722   Low-Low   Low-Low   Low-Low</code></pre>
+1        0.382  0.8740645 0.7382587  High-Low  High-Low  High-Low
+2        0.172  1.5654616 2.3199089 High-High High-High High-High
+3        0.418 -0.8548608 0.2353086   Low-Low  Low-High  Low-High
+4        0.252 -1.0620999 1.2749892   Low-Low  High-Low   Low-Low
+5        0.110 -0.7075882 0.4895039   Low-Low   Low-Low   Low-Low
+6        0.244 -0.9503517 1.0590150   Low-Low   Low-Low   Low-Low</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(local_moran_possession)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>            ii          eii       var_ii        z_ii      p_ii p_ii_sim
-1 -0.087178425 -0.057630550 0.5257707182 -0.04075004 0.9674952    0.976
-2  0.683113040  0.019614256 0.3798516465  1.07654732 0.2816825    0.312
-3 -0.082448066  0.006956016 0.0125931034 -0.79669293 0.4256294    0.440
-4 -0.004673618 -0.001486654 0.0038807843 -0.05115845 0.9591993    0.860
-5  0.015199088 -0.001654223 0.0004653081  0.78129474 0.4346292    0.464
-6  0.236323825  0.003877347 0.1124211609  0.69326446 0.4881436    0.572
-  p_folded_sim   skewness    kurtosis      mean    median     pysal
-1        0.488  0.5585906  0.03630575  High-Low  High-Low  High-Low
-2        0.156  1.1456753  0.92714730 High-High High-High High-High
-3        0.220 -0.5720469 -0.26726860  Low-High High-High  Low-High
-4        0.430 -0.6360955  0.24610806   Low-Low  High-Low  Low-High
-5        0.232 -0.7692775  0.81362277   Low-Low  High-Low   Low-Low
-6        0.286 -0.8069866  0.46868135   Low-Low   Low-Low   Low-Low</code></pre>
+<pre><code>            ii           eii       var_ii        z_ii      p_ii p_ii_sim
+1 -0.087178425 -0.0508882776 0.5542190196 -0.04874701 0.9611209    0.896
+2  0.683113040 -0.0350628049 0.3597021558  1.19745520 0.2311292    0.284
+3 -0.082448066 -0.0027377386 0.0123204589 -0.71812683 0.4726791    0.444
+4 -0.004673618 -0.0001978869 0.0040539875 -0.07029474 0.9439591    0.836
+5  0.015199088 -0.0007337903 0.0004657105  0.73830568 0.4603287    0.532
+6  0.236323825 -0.0021934472 0.0985681795  0.75971634 0.4474242    0.504
+  p_folded_sim   skewness  kurtosis      mean    median     pysal
+1        0.448  0.7378395 0.4244518  High-Low  High-Low  High-Low
+2        0.142  1.2394924 1.5754669 High-High High-High High-High
+3        0.222 -0.8481805 0.5358703  Low-High High-High  Low-High
+4        0.418 -0.8045269 0.7904996   Low-Low  High-Low  Low-High
+5        0.266 -0.7156433 0.3659371   Low-Low  High-Low   Low-Low
+6        0.252 -0.7411907 0.2350726   Low-Low   Low-Low   Low-Low</code></pre>
 </div>
 </div>
 <p>The output provides:</p>
@@ -5944,8 +5975,8 @@ Moran I statistic       Expectation          Variance
 <li><p><strong>Pr(z)</strong>: The p-value for testing whether the observed spatial pattern is significantly different from random.</p></li>
 </ul>
 </section>
-<section id="identifying-clusters-and-outliers" class="level3" data-number="1.9.2">
-<h3 data-number="1.9.2" class="anchored" data-anchor-id="identifying-clusters-and-outliers"><span class="header-section-number">1.9.2</span> <strong>Identifying Clusters and Outliers</strong></h3>
+<section id="identifying-clusters-and-outliers" class="level3" data-number="1.10.2">
+<h3 data-number="1.10.2" class="anchored" data-anchor-id="identifying-clusters-and-outliers"><span class="header-section-number">1.10.2</span> <strong>Identifying Clusters and Outliers</strong></h3>
 <p>We categorize the provinces into different types of spatial clusters based on the sign and significance of Local Moran’s I. Provinces can be classified as:</p>
 <ul>
 <li><p><strong>High-High</strong>: High offense rates surrounded by other high-rate areas.</p></li>
@@ -5975,8 +6006,8 @@ colnames(possession_with_intent_to_distribute_cases_data_2022)[ncol(possession_w
 </div>
 </div>
 </section>
-<section id="mapping-local-morans-i-and-p-values" class="level3" data-number="1.9.3">
-<h3 data-number="1.9.3" class="anchored" data-anchor-id="mapping-local-morans-i-and-p-values"><span class="header-section-number">1.9.3</span> <strong>Mapping Local Moran’s I and p-values</strong></h3>
+<section id="mapping-local-morans-i-and-p-values" class="level3" data-number="1.10.3">
+<h3 data-number="1.10.3" class="anchored" data-anchor-id="mapping-local-morans-i-and-p-values"><span class="header-section-number">1.10.3</span> <strong>Mapping Local Moran’s I and p-values</strong></h3>
 <p>We visualize the spatial patterns by creating choropleth maps of the Local Moran’s I statistics and the corresponding p-values.</p>
 <p>Trafficking Cases:</p>
 <div class="cell">
@@ -6064,83 +6095,14 @@ tmap_options(max.categories = 77) in the layer function to show all levels.</cod
 <p>Local Moran’s I reveals significant spatial clusters for both trafficking and possession-related offenses, suggesting that drug-related activities are not randomly distributed across Thailand. Certain provinces act as hotspots for trafficking and possession, warranting targeted enforcement efforts.</p>
 </section>
 </section>
-<section id="classifying-lisa-results" class="level3" data-number="1.9.4">
-<h3 data-number="1.9.4" class="anchored" data-anchor-id="classifying-lisa-results"><span class="header-section-number">1.9.4</span> <strong>Classifying LISA Results</strong></h3>
-<p>We’ll classify each province based on its Local Moran’s I values (positive/negative) and its p-value (significance level). We will create a new column <code>quadrant</code> to store these categories.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Convert the neighbor list for trafficking cases into listw format with row-standardized weights</span></span>
-<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a><span class="co"># trafficking_cases_wm_rs &lt;- nb2listw(trafficking_cases_nb_q, style = &quot;W&quot;, zero.policy = TRUE)</span></span>
-<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # Convert the neighbor list for possession cases into listw format with row-standardized weights</span></span>
-<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a><span class="co"># possession_cases_wm_rs &lt;- nb2listw(possession_cases_nb_q, style = &quot;W&quot;, zero.policy = TRUE)</span></span>
-<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a><span class="co"># # Local Moran&#39;s I for trafficking cases</span></span>
-<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a><span class="co"># local_moran_trafficking &lt;- localmoran(trafficking_cases_data_2022$no_cases, trafficking_cases_wm_rs)</span></span>
-<span id="cb92-9"><a href="#cb92-9" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb92-10"><a href="#cb92-10" aria-hidden="true" tabindex="-1"></a><span class="co"># # Local Moran&#39;s I for possession with intent to distribute cases</span></span>
-<span id="cb92-11"><a href="#cb92-11" aria-hidden="true" tabindex="-1"></a><span class="co"># local_moran_possession &lt;- localmoran(possession_with_intent_to_distribute_cases_data_2022$no_cases, possession_cases_wm_rs)</span></span>
-<span id="cb92-12"><a href="#cb92-12" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb92-13"><a href="#cb92-13" aria-hidden="true" tabindex="-1"></a><span class="co"># head(local_moran_trafficking)</span></span>
-<span id="cb92-14"><a href="#cb92-14" aria-hidden="true" tabindex="-1"></a><span class="co"># head(local_moran_possession)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the quadrant classification for trafficking cases</span></span>
-<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking &lt;- vector(mode = &quot;numeric&quot;, length = nrow(local_moran_trafficking))</span></span>
-<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a><span class="co"># # Lagging the variable of interest (drug cases)</span></span>
-<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a><span class="co"># trafficking_cases_data_2022$lag_cases &lt;- lag.listw(trafficking_cases_wm_rs, trafficking_cases_data_2022$no_cases)</span></span>
-<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a><span class="co"># # Classify the local Moran&#39;s I results into the quadrants (categories)</span></span>
-<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a><span class="co"># DV_trafficking &lt;- trafficking_cases_data_2022$lag_cases - mean(trafficking_cases_data_2022$lag_cases)</span></span>
-<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a><span class="co"># LM_I_trafficking &lt;- local_moran_trafficking[,1]  # Ii value</span></span>
-<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a><span class="co"># signif &lt;- 0.05  # significance threshold</span></span>
-<span id="cb93-12"><a href="#cb93-12" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-13"><a href="#cb93-13" aria-hidden="true" tabindex="-1"></a><span class="co"># # Assign categories</span></span>
-<span id="cb93-14"><a href="#cb93-14" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking[DV_trafficking &lt; 0 &amp; LM_I_trafficking &gt; 0] &lt;- 1  # Low-High</span></span>
-<span id="cb93-15"><a href="#cb93-15" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking[DV_trafficking &gt; 0 &amp; LM_I_trafficking &lt; 0] &lt;- 2  # High-Low</span></span>
-<span id="cb93-16"><a href="#cb93-16" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking[DV_trafficking &lt; 0 &amp; LM_I_trafficking &lt; 0] &lt;- 3  # Low-Low</span></span>
-<span id="cb93-17"><a href="#cb93-17" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking[DV_trafficking &gt; 0 &amp; LM_I_trafficking &gt; 0] &lt;- 4  # High-High</span></span>
-<span id="cb93-18"><a href="#cb93-18" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-19"><a href="#cb93-19" aria-hidden="true" tabindex="-1"></a><span class="co"># # Non-significant regions</span></span>
-<span id="cb93-20"><a href="#cb93-20" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_trafficking[local_moran_trafficking[,5] &gt; signif] &lt;- 0  # Insignificant</span></span>
-<span id="cb93-21"><a href="#cb93-21" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb93-22"><a href="#cb93-22" aria-hidden="true" tabindex="-1"></a><span class="co"># # Append to the dataset</span></span>
-<span id="cb93-23"><a href="#cb93-23" aria-hidden="true" tabindex="-1"></a><span class="co"># trafficking_cases_data_2022$quadrant &lt;- quadrant_trafficking</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>You can repeat the above steps for the possession with intent to distribute cases:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Prepare the quadrant classification for possession cases</span></span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession &lt;- vector(mode = &quot;numeric&quot;, length = nrow(local_moran_possession))</span></span>
-<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a><span class="co"># possession_with_intent_to_distribute_cases_data_2022$lag_cases &lt;- lag.listw(possession_cases_wm_rs, possession_with_intent_to_distribute_cases_data_2022$no_cases)</span></span>
-<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb94-6"><a href="#cb94-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # Classify the local Moran&#39;s I results into quadrants</span></span>
-<span id="cb94-7"><a href="#cb94-7" aria-hidden="true" tabindex="-1"></a><span class="co"># DV_possession &lt;- possession_with_intent_to_distribute_cases_data_2022$lag_cases - mean(possession_with_intent_to_distribute_cases_data_2022$lag_cases)</span></span>
-<span id="cb94-8"><a href="#cb94-8" aria-hidden="true" tabindex="-1"></a><span class="co"># LM_I_possession &lt;- local_moran_possession[,1]</span></span>
-<span id="cb94-9"><a href="#cb94-9" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb94-10"><a href="#cb94-10" aria-hidden="true" tabindex="-1"></a><span class="co"># # Assign categories</span></span>
-<span id="cb94-11"><a href="#cb94-11" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession[DV_possession &lt; 0 &amp; LM_I_possession &gt; 0] &lt;- 1  # Low-High</span></span>
-<span id="cb94-12"><a href="#cb94-12" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession[DV_possession &gt; 0 &amp; LM_I_possession &lt; 0] &lt;- 2  # High-Low</span></span>
-<span id="cb94-13"><a href="#cb94-13" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession[DV_possession &lt; 0 &amp; LM_I_possession &lt; 0] &lt;- 3  # Low-Low</span></span>
-<span id="cb94-14"><a href="#cb94-14" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession[DV_possession &gt; 0 &amp; LM_I_possession &gt; 0] &lt;- 4  # High-High</span></span>
-<span id="cb94-15"><a href="#cb94-15" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb94-16"><a href="#cb94-16" aria-hidden="true" tabindex="-1"></a><span class="co"># # Non-significant regions</span></span>
-<span id="cb94-17"><a href="#cb94-17" aria-hidden="true" tabindex="-1"></a><span class="co"># quadrant_possession[local_moran_possession[,5] &gt; signif] &lt;- 0  # Insignificant</span></span>
-<span id="cb94-18"><a href="#cb94-18" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb94-19"><a href="#cb94-19" aria-hidden="true" tabindex="-1"></a><span class="co"># # Append to the dataset</span></span>
-<span id="cb94-20"><a href="#cb94-20" aria-hidden="true" tabindex="-1"></a><span class="co"># possession_with_intent_to_distribute_cases_data_2022$quadrant &lt;- quadrant_possession</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 </section>
+<section id="discussion" class="level2" data-number="1.11">
+<h2 data-number="1.11" class="anchored" data-anchor-id="discussion"><span class="header-section-number">1.11</span> <strong>Discussion</strong></h2>
+<p>The Local Moran’s I analysis reveals that drug abuse cases in Thailand are spatially clustered rather than randomly distributed. <strong>Trafficking cases</strong> show significant high-high clusters in specific regions, suggesting regional hotspots for drug trafficking activities. Similarly, <strong>possession with intent to distribute cases</strong> demonstrate even stronger clustering, indicating potential hubs for drug distribution. The p-value maps confirm that these clusters are statistically significant, providing evidence of spatial autocorrelation. These results highlight key areas where drug-related activities are concentrated, offering valuable insights for targeted law enforcement interventions.</p>
+<section id="conclusion" class="level3" data-number="1.11.1">
+<h3 data-number="1.11.1" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">1.11.1</span> <strong>Conclusion</strong></h3>
+<p>This geospatial analysis identifies distinct spatial clusters of drug abuse across Thailand, with northern provinces near the Golden Triangle emerging as key hotspots. Over time, the patterns of drug use have remained concentrated along critical transportation routes, pointing to underlying trafficking networks. The application of global and local Moran’s I methods reveals that drug abuse is not evenly distributed, with certain provinces consistently showing elevated levels of offenses. These findings are crucial for informing targeted policy and intervention strategies to combat drug-related crimes.</p>
 </section>
-<section id="discussion" class="level2" data-number="1.10">
-<h2 data-number="1.10" class="anchored" data-anchor-id="discussion"><span class="header-section-number">1.10</span> <strong>Discussion</strong></h2>
-<p>From the analysis, it is clear that drug abuse cases in Thailand are not randomly distributed but tend to cluster in specific regions. The clusters are primarily concentrated in the northern provinces, likely influenced by the country’s proximity to the Golden Triangle, a major drug production site.</p>
-<p>Over time, the analysis shows that hotspots in drug use have shifted slightly but remain concentrated around key transportation routes, indicating potential trafficking patterns.</p>
-</section>
-<section id="conclusion" class="level2" data-number="1.11">
-<h2 data-number="1.11" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">1.11</span> <strong>Conclusion</strong></h2>
-<p>This geospatial analysis highlights the non-random, clustered nature of drug abuse cases across Thailand. The application of global and local spatial autocorrelation methods provides insight into the spatial dynamics of the drug problem, with certain provinces consistently exhibiting high drug use levels. These findings have important implications for law enforcement and public health interventions.</p>
 </section>
 <section id="references" class="level2" data-number="1.12">
 <h2 data-number="1.12" class="anchored" data-anchor-id="references"><span class="header-section-number">1.12</span> <strong>References</strong></h2>
@@ -6582,7 +6544,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom","loop":false,"openEffect":"zoom"});
+<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","loop":false,"closeEffect":"zoom","selector":".lightbox","descPosition":"bottom"});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {

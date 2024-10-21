@@ -387,6 +387,7 @@ Now, we will delete the TS.x field by using the code chunk below.
 ```{r}
 shan_ict <- select(cluster_vars, c(2:6))
 head(shan_ict, 10)
+write_rds(shan_sf, "data/rds/shan_ict.rds")
 ```
 
 ```{r}
@@ -659,6 +660,7 @@ The code chunk below form the join in three steps:
 ```{r}
 shan_sf_cluster <- cbind(shan_sf, as.matrix(groups)) %>%
   rename(`CLUSTER`=`as.matrix.groups.`)
+write_rds(shan_sf_cluster, "data/rds/shan_sf_cluster.rds")
 ```
 
 Next, *qtm()* of **tmap** package is used to plot the choropleth map showing the cluster formed.

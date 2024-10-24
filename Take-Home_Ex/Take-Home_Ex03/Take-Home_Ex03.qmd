@@ -1,1 +1,157 @@
+---
+title: "Take-Home Exercise 3: Geospatial Analytics for Social Good - Thailand Drug Abuse Case Study"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-10-08
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+abstract: |
+  The goal is to develop a prototype module for a Shiny application that analyzes potential push and pull factors affecting bus commuting patterns in Singapore. This involves visualizing spatial data, creating interactive maps, and allowing users to explore various factors influencing commuter behavior.
+keywords: ["Geospatial Analysis", "Drug Abuse", "Spatial Autocorrelation", "Thailand", "Clusters", "Hotspots"]
+---
 
+# Overview
+
+In this exercise, we focus on prototyping exploratory spatial data analysis, particularly the density of spatial assets within hexagonal traffic analysis zones (TAZ) in Singapore. Hexagonal TAZs are advantageous because they offer uniform size and shape, making them ideal for comparing transport attractiveness across different areas. According to Chmielewski et al. (2020), a hexagon radius of 125 meters is recommended for highly urbanized areas, while 250 meters suits less urbanized regions.
+
+The data preparation in this exercise lays the groundwork for calibrating spatial interaction models. However, for this prototype, we will focus solely on exploratory spatial data analysis.
+
+# **Determine Necessary R Packages**
+
+We need to identify R packages that are essential for data manipulation, spatial analysis, visualization, and building the Shiny application. All packages must be available on CRAN.
+
+## **Required Packages**
+
+-   **`tmap`**: Visualizing spatial data through thematic maps (both interactive and static).
+
+<!-- -->
+
+-   **`sf`**: Handling spatial data using simple features.
+
+-   **`sp`**: An older package for spatial data manipulation (used for compatibility purposes).
+
+-   **`reshape2`**: Transforming data frames between wide and long formats.
+
+-   **`ggplot2`**: Creating advanced visualizations and plots.
+
+-   **`tidyverse`**: Data cleaning and transformation (includes `dplyr`, `tidyr`, `readr`, etc.).
+
+-   **`stplanr`**: Functions for spatial transport data analysis, including networks and OD matrices.
+
+-   **`knitr`**: Integrating code and text in a single document (useful for reports).
+
+-   **`kableExtra`**: Enhancing the appearance of tables created with `knitr::kable`.
+
+## **CRAN Support**
+
+All the above packages are available and supported on CRAN. You can install them using `install.packages("package_name")`.
+
+```{r}
+# Install pacman if not already installed
+if (!require("pacman")) install.packages("pacman")
+
+pacman::p_load(tmap, sf, sp, reshape2, ggplot2, ggpubr, tidyverse, stplanr, knitr, kableExtra)
+```
+
+# **Data Preparation**
+
+We will work with the following datasets:
+
+-   **URA's Master Plan Subzone 2019 Layer**: Shapefile format of Singapore's subzones.
+
+-   **Bus Stop Locations**: Extracted from the Land Transport Authority (LTA).
+
+-   **Bus Passenger Flow Data**: Tabulated data for November 2023 to January 2024 from the LTA DataMall.
+
+-   **Population Data for 2023**: Obtained from SingStat.
+
+-   **Schools Data**: Sourced from the Ministry of Education (MOE).
+
+-   **Financial Services Data**: Locations of financial institutions.
+
+-   **Healthcare Facilities Data**: Includes hospitals, polyclinics, and CHAS clinics (derived from Google Maps).
+
+**Note:** Ensure that all datasets are properly licensed for use and comply with any data usage policies.
+
+## **Subzone Layer**
+
+### **Reading the Subzone Layer**
+
+We start by reading the subzone layer using the `sf` package:
+
+```{r}
+# Read the KML file containing subzone boundaries
+mpsz <- st_read("data/geospatial/Master Plan 2019 Subzone Boundary.kml")
+```
+
+**Converting to 2D Geometry**
+
+The subzone data might be in 3D geometry. We convert it to 2D for compatibility:
+
+```{r}
+# Convert 3D geometries to 2D
+mpsz <- st_zm(mpsz, drop = TRUE)
+```
+
+**Extracting Attributes**
+
+The subzone names (`SUBZONE_N`) and planning area names (`PLN_AREA_N`) may be embedded within a description field. We can extract them using string manipulation functions from the `stringr` package:
+
+```{r}
+library(stringr)
+
+# Extract SUBZONE_N
+mpsz <- mpsz %>%
+  mutate(SUBZONE_N = str_extract(Description, "<th>SUBZONE_N</th> <td>(.*?)</td>")) %>%
+  mutate(SUBZONE_N = str_remove_all(SUBZONE_N, "<.*?>|SUBZONE_N"))
+
+# Extract PLN_AREA_N
+mpsz <- mpsz %>%
+  mutate(PLN_AREA_N = str_extract(Description, "<th>PLN_AREA_N</th> <td>(.*?)</td>")) %>%
+  mutate(PLN_AREA_N = str_remove_all(PLN_AREA_N, "<.*?>|PLN_AREA_N"))
+
+```
+
+**Cleaning Up**
+
+Remove unnecessary columns to tidy up the dataset:
+
+```{r}
+# Remove the Description column
+mpsz$Description <- NULL
+```
+
+**Saving the Shapefile**
+
+Save the cleaned data as a new shapefile for future use:
+
+```{r}
+# Write to a new shapefile
+st_write(mpsz, "data/geospatial/mpsz_sf.shp")
+```
+
+**Reading the Updated Shapefile**
+
+Now, read the updated shapefile:
+
+```{r}
+# Read the updated shapefile
+mpsz_sf <- st_read("data/geospatial/mpsz_sf.shp")
+
+```
+
+**Creating Spatial Grids**
+
+**Transforming Coordinate Reference System (CRS)**
+
+Convert the subzone data to the Singapore Transverse Mercator coordinate system (SVY21 / EPSG:3414):

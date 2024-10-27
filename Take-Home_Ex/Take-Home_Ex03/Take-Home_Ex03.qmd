@@ -135,7 +135,7 @@ mpsz$Description <- NULL
 
 Save the cleaned data as a new shapefile for future use:
 
-```{r}
+```{r, eval=FALSE}
 # Write to a new shapefile
 st_write(mpsz, "data/geospatial/mpsz_sf.shp")
 ```

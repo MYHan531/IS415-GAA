@@ -1,0 +1,20 @@
+---
+title: "In-Class Exercise 10: Geographical Segmentation with Spatially Constrained Clustering Techniques"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-10-21
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+abstract: |
+  In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data..
+---

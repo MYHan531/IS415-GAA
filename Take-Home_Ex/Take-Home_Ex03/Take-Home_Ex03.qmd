@@ -1,8 +1,8 @@
 ---
-title: "Take-Home Exercise 3: Geospatial Analytics for Social Good - Thailand Drug Abuse Case Study"
+title: "Take-Home Exercise 3: Uncovering Vietnam’s Economic Pulse: A Geospatial Exploration of Growth Hotspots (2012-2023)"
 title-block-banner: true
 author: "Han Ming Yan"
-date: 2024-10-08
+date: 2024-10-30
 date-modified: "last-modified"
 format:
   html:
@@ -20,138 +20,349 @@ abstract: |
 keywords: ["Geospatial Analysis", "Drug Abuse", "Spatial Autocorrelation", "Thailand", "Clusters", "Hotspots"]
 ---
 
-# Overview
+# **Overview**
 
-In this exercise, we focus on prototyping exploratory spatial data analysis, particularly the density of spatial assets within hexagonal traffic analysis zones (TAZ) in Singapore. Hexagonal TAZs are advantageous because they offer uniform size and shape, making them ideal for comparing transport attractiveness across different areas. According to Chmielewski et al. (2020), a hexagon radius of 125 meters is recommended for highly urbanized areas, while 250 meters suits less urbanized regions.
+This project focuses on analyzing Vietnam’s economic development from 2012 to 2023 at the provincial level. We will explore economic patterns using datasets on farms, enterprises, and industrial production to identify regional growth disparities and provide insights for policymakers and investors.
 
-The data preparation in this exercise lays the groundwork for calibrating spatial interaction models. However, for this prototype, we will focus solely on exploratory spatial data analysis.
-
-# **Determine Necessary R Packages**
-
-We need to identify R packages that are essential for data manipulation, spatial analysis, visualization, and building the Shiny application. All packages must be available on CRAN.
-
-## **Required Packages**
-
--   **`tmap`**: Visualizing spatial data through thematic maps (both interactive and static).
-
-<!-- -->
-
--   **`sf`**: Handling spatial data using simple features.
-
--   **`sp`**: An older package for spatial data manipulation (used for compatibility purposes).
-
--   **`reshape2`**: Transforming data frames between wide and long formats.
-
--   **`ggplot2`**: Creating advanced visualizations and plots.
-
--   **`tidyverse`**: Data cleaning and transformation (includes `dplyr`, `tidyr`, `readr`, etc.).
-
--   **`stplanr`**: Functions for spatial transport data analysis, including networks and OD matrices.
-
--   **`knitr`**: Integrating code and text in a single document (useful for reports).
-
--   **`kableExtra`**: Enhancing the appearance of tables created with `knitr::kable`.
-
-## **CRAN Support**
-
-All the above packages are available and supported on CRAN. You can install them using `install.packages("package_name")`.
+# Import Packages
 
 ```{r}
-# Install pacman if not already installed
-if (!require("pacman")) install.packages("pacman")
-
-pacman::p_load(tmap, sf, sp, reshape2, ggplot2, ggpubr, tidyverse, stplanr, knitr, kableExtra)
+# Load necessary packages for geospatial and statistical analysis
+pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
 ```
 
-# **Data Preparation**
-
-We will work with the following datasets:
-
--   **URA's Master Plan Subzone 2019 Layer**: Shapefile format of Singapore's subzones.
-
--   **Bus Stop Locations**: Extracted from the Land Transport Authority (LTA).
-
--   **Bus Passenger Flow Data**: Tabulated data for November 2023 to January 2024 from the LTA DataMall.
-
--   **Population Data for 2023**: Obtained from SingStat.
-
--   **Schools Data**: Sourced from the Ministry of Education (MOE).
-
--   **Financial Services Data**: Locations of financial institutions.
-
--   **Healthcare Facilities Data**: Includes hospitals, polyclinics, and CHAS clinics (derived from Google Maps).
-
-**Note:** Ensure that all datasets are properly licensed for use and comply with any data usage policies.
-
-## **Subzone Layer**
-
-### **Reading the Subzone Layer**
-
-We start by reading the subzone layer using the `sf` package:
+# Import Data
 
 ```{r}
-# Read the KML file containing subzone boundaries
-mpsz <- st_read("data/geospatial/Master Plan 2019 Subzone Boundary.kml")
+# Load the economic data from CSV file
+# farms_data <- read_csv("data/aspatial/farms.csv", skip = 1)
+farms_data <-  read_rds("data/rds/farms.rds")
+enterprise_data <- read_csv("data/aspatial/Enterprise.csv")
+ff_data <- read_csv("data/aspatial/Forestry&Fishing.csv")
+industry_data <- read_csv("data/aspatial/Industry.csv")
+
+# Reference geospatial data (shapefile)
+vietnam_provinces <- st_read(dsn = "data/geospatial", layer = "Dia_phan_Tinh")
 ```
-
-**Converting to 2D Geometry**
-
-The subzone data might be in 3D geometry. We convert it to 2D for compatibility:
 
 ```{r}
-# Convert 3D geometries to 2D
-mpsz <- st_zm(mpsz, drop = TRUE)
+head(farms_data)
 ```
 
-**Extracting Attributes**
-
-The subzone names (`SUBZONE_N`) and planning area names (`PLN_AREA_N`) may be embedded within a description field. We can extract them using string manipulation functions from the `stringr` package:
+# Data Preparation and Cleaning
 
 ```{r}
-library(stringr)
+# Clean and organize the farms data for analysis
+# farms_data <- farms_data %>%
+#   filter(!is.na(`Cities, provincies`)) %>%
+#   rename(province = `Cities, provincies`)
+farms_data <- farms_data %>%
+  mutate(across(starts_with("20"), ~ as.numeric(.)))
 
-# Extract SUBZONE_N
-mpsz <- mpsz %>%
-  mutate(SUBZONE_N = str_extract(Description, "<th>SUBZONE_N</th> <td>(.*?)</td>")) %>%
-  mutate(SUBZONE_N = str_remove_all(SUBZONE_N, "<.*?>|SUBZONE_N"))
+farms_data <- farms_data %>%
+     mutate(across(starts_with("20"), ~ replace_na(., 0)))
 
-# Extract PLN_AREA_N
-mpsz <- mpsz %>%
-  mutate(PLN_AREA_N = str_extract(Description, "<th>PLN_AREA_N</th> <td>(.*?)</td>")) %>%
-  mutate(PLN_AREA_N = str_remove_all(PLN_AREA_N, "<.*?>|PLN_AREA_N"))
+farms_long <- farms_data %>%
+  pivot_longer(cols = starts_with("20"), names_to = "year_type", values_to = "count")
+
 
 ```
-
-**Cleaning Up**
-
-Remove unnecessary columns to tidy up the dataset:
 
 ```{r}
-# Remove the Description column
-mpsz$Description <- NULL
+geospatial_provinces <- unique(vietnam_provinces$Name)
+
+farms_data <- farms_data %>%
+    filter( geospatial_provinces %in% `Cities, provincies`)
 ```
 
-**Saving the Shapefile**
-
-Save the cleaned data as a new shapefile for future use:
-
-```{r, eval=FALSE}
-# Write to a new shapefile
-st_write(mpsz, "data/geospatial/mpsz_sf.shp")
-```
-
-**Reading the Updated Shapefile**
-
-Now, read the updated shapefile:
+# Exploratory Spatial Data Analysis (EDA)
 
 ```{r}
-# Read the updated shapefile
-mpsz_sf <- st_read("data/geospatial/mpsz_sf.shp")
+# Rename the 'Name' column in the geospatial data to 'province_name'
+vietnam_provinces <- vietnam_provinces %>%
+  rename(province_name = Name)
+
+# Similarly, rename 'Name' in the economic data if needed, e.g., 'province_name'
+farms_long <- farms_long %>%
+  rename(province_name = `Cities, provincies`) %>%
+  filter(!province_name %in% c("WHOLE COUNTRY", "Northern Central area and Central coastal area", "Northern midlands and mountain areas"))
+
+vietnam_eda_data <- vietnam_provinces %>%
+  left_join(farms_long, by = "province_name")
+```
+
+```{r}
+#| fig-height: 80
+# Set tmap to plot mode
+tmap_mode("plot")
+
+# Display each map separately
+tm_shape(vietnam_eda_data) + 
+  tm_polygons("Code", title = "Code") +
+  tm_layout(main.title = "Map of Code", main.title.size = 1.5)
+
+tm_shape(vietnam_eda_data) + 
+  tm_polygons("province_name", title = "Province Name") +
+  tm_layout(main.title = "Map of Province Name", main.title.size = 1.5)
+
+tm_shape(vietnam_eda_data) + 
+  tm_polygons("year_type", title = "Year Type") +
+  tm_layout(main.title = "Map of Year Type", main.title.size = 1.5)
+
+tm_shape(vietnam_eda_data) + 
+  tm_polygons("count", title = "Count") +
+  tm_layout(main.title = "Map of Count", main.title.size = 1.5)
 
 ```
 
-**Creating Spatial Grids**
+## Viewing the 2019 dataset for Vietnam
 
-**Transforming Coordinate Reference System (CRS)**
+```{r}
+# Total farms for 2019
 
-Convert the subzone data to the Singapore Transverse Mercator coordinate system (SVY21 / EPSG:3414):
+# Total farms for 2019 
+map_total_2019 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2019 Total"), by = "province_name")
+
+tm_shape(map_total_2019) +
+  tm_polygons("count.x", title = "2019 Total Farms", palette = "Greens") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Cultivation farms for 2019 
+map_cultivation_2019 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2019 Cultivation farm"), by = "province_name")
+
+tm_shape(map_cultivation_2019) +
+  tm_polygons("count.x", title = "2019 Cultivation Farms", palette = "Oranges") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Livestock farms for 2019 
+map_livestock_2019 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2019 Livestock farm"), by = "province_name")
+
+tm_shape(map_livestock_2019) +
+  tm_polygons("count.x", title = "2019 Livestock Farms", palette = "Blues") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Fishing farms for 2019 
+map_fishing_2019 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2019 Fishing farm"), by = "province_name")
+
+tm_shape(map_fishing_2019) +
+  tm_polygons("count.x", title = "2019 Fishing Farms", palette = "Purples") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+
+```
+
+# Examine Spatial Autocorrelation (Global Moran’s I)
+
+Spatial autocorrelation helps determine if farm counts are clustered, dispersed, or randomly distributed across space. **Moran’s I** is a common measure for this.
+
+In spatial data analysis, **Moran’s I** is a crucial statistic for measuring spatial autocorrelation—essentially, the degree to which similar values are clustered together across space. In simpler terms, it tells us whether provinces with high farm counts are located near each other (positive spatial autocorrelation), or whether high and low values are scattered randomly across the map (no spatial autocorrelation).
+
+### What is Moran’s I?
+
+The **Moran’s I** statistic ranges from -1 to +1 and is interpreted as follows:
+
+-   **+1**: Perfect positive spatial autocorrelation (neighboring areas have very similar values).
+
+-   **0**: No spatial autocorrelation (values are randomly distributed in space).
+
+-   **-1**: Perfect negative spatial autocorrelation (neighboring areas have opposite values).
+
+### **Define Spatial Neighbors and Weights**:
+
+Create a spatial weights matrix based on neighboring provinces.
+
+```{r}
+# # Calculate Moran's I for a specific year_type, e.g., "2019 Total"
+
+map_total_2019_filtered <- map_total_2019 %>%
+  filter(year_type.x == "2019 Total") %>%
+  select(province_name, count.x, geometry) %>% # Select relevant columns
+  distinct()  # Ensure unique rows per province
+
+# Ensure the spatial data (vietnam_provinces) includes only the provinces in map_total_2019_filtered
+vietnam_provinces_filtered <- vietnam_provinces %>%
+  filter(province_name %in% map_total_2019_filtered$province_name)
+
+# Create a neighbors and weights list based on the filtered spatial data
+neighbors <- poly2nb(vietnam_provinces_filtered, queen = TRUE)
+weights <- nb2listw(neighbors, style = "W", zero.policy = TRUE)
+```
+
+### Calculate Moran’s I
+
+```{r}
+# Now run Moran's I test on the filtered data
+morans_i <- moran.test(map_total_2019_filtered$count.x, weights, zero.policy = TRUE)
+print(morans_i)
+```
+
+In your results:
+
+-   **Moran I statistic**: `0.1474`, which is a positive value, suggests a slight tendency for spatial clustering. However, since it’s not close to 1, the clustering is weak.
+
+#### 1. Moran I Statistic
+
+-   The **Moran I statistic** value of `0.1474` indicates a mild positive spatial autocorrelation. This means that provinces with similar farm counts (e.g., high or low) are somewhat clustered together, though the effect is weak.
+
+-   A higher value closer to +1 would imply stronger clustering, whereas a value closer to 0 would indicate that farm counts are distributed more randomly.
+
+#### 2. Expectation
+
+-   The **Expectation** of Moran’s I under the null hypothesis (random spatial distribution) is `-0.0161`. This is the average Moran’s I we’d expect if there were no spatial structure at all.
+
+-   Your observed Moran’s I (0.1474) is higher than the expectation (-0.0161), suggesting a tendency towards clustering rather than randomness. Comparing the **Expectation** to the **Moran’s I** value helps us understand if our observed spatial pattern deviates from a random distribution.
+
+#### 3. Variance
+
+-   **Variance** measures the spread of possible Moran’s I values under the null hypothesis. A low variance means our observed Moran’s I is less likely to occur by chance, making it a more reliable indication of spatial clustering.
+
+-   In your result, the **Variance** is `0.0061`, which helps in calculating the standard deviation and, in turn, the significance of Moran’s I.
+
+### What About the p-value?
+
+The **p-value** is crucial for determining if the observed Moran’s I is statistically significant. In your output:
+
+-   **p-value = 0.0182**: This indicates a 1.82% chance that the observed spatial pattern could have occurred randomly.
+
+-   In most statistical tests, a p-value below 0.05 would indicate statistical significance, meaning we’d confidently say clustering exists. Here, the p-value is slightly above 0.05, so it’s marginally **not significant** at the 5% level. However, it’s close enough that we might consider exploring further or using a 10% threshold, where it would be considered marginally significant.
+
+### Summary of Results
+
+Based on your Moran's I results:
+
+-   There is weak evidence of spatial clustering in farm counts across provinces (`Moran I = 0.1474`).
+
+-   The positive Moran’s I, compared to the expectation under randomness (-0.0161), suggests a slight clustering effect.
+
+-   However, the p-value of 0.0182 indicates that this result is only marginally significant, meaning we can't conclusively say that clustering exists at the 5% significance level.
+
+### Why It Matters
+
+Understanding spatial autocorrelation is important because it reveals whether similar values are clustered or dispersed across regions. For policymakers or researchers analyzing farm distribution, identifying clusters could help target specific regions for agricultural support, development, or resources. In cases where spatial autocorrelation is significant, it often suggests underlying spatial processes that require further investigation.
+
+In your case, while the results do not provide strong evidence of clustering, the marginal p-value suggests that a more in-depth analysis or additional data might reveal more substantial spatial patterns.
+
+## Local Moran I
+
+After calculating the **Global Moran's I**, the next steps in **Spatial Exploratory Data Analysis (Spatial EDA)** typically involve **Local Spatial Autocorrelation Analysis** and additional **visualizations** to identify specific clusters, outliers, and patterns in your data.
+
+### **Local Indicators of Spatial Association (LISA)**
+
+1.  **Purpose**: While Global Moran’s I provides an overall measure of spatial autocorrelation, **Local Moran’s I (LISA)** identifies specific clusters and outliers in the dataset. LISA helps to pinpoint local patterns that may not be apparent in the global statistic.
+
+2.  **Method**: You can calculate Local Moran's I using the `localmoran()` function from the `spdep` package.
+
+```{r}
+# Calculate Local Moran's I for farm count
+local_morans <- localmoran(map_total_2019_filtered$count.x, weights, zero.policy = TRUE)
+local_morans
+# Add the Local Moran's I values and p-values to the spatial data
+map_total_2019_filtered$local_I <- local_morans[, 1]  # Local Moran's I statistic
+map_total_2019_filtered$p_value <- local_morans[, 5]  # P-value for Local Moran's I
+```
+
+-   **Local Moran’s I (local_I)**: Indicates clustering (high positive values) or outliers (high negative values) for each province.
+
+-   **P-value**: Shows the statistical significance of clustering for each location. Provinces with significant p-values (usually \<0.05) are those with notable spatial patterns.
+
+### **Mapping Local Moran’s I (LISA Map)**
+
+Now that we have calculated Local Moran's I, let's map it to visualize the clusters and outliers across provinces. This will allow you to identify "hot spots" (high values surrounded by high values) and "cold spots" (low values surrounded by low values).
+
+```{r}
+
+# Map the Local Moran's I (LISA) values
+tm_shape(map_total_2019_filtered) +
+  tm_polygons("local_I", style = "quantile", title = "Local Moran's I") +
+  tm_borders() +
+  tm_layout(main.title = "LISA (Local Moran's I) for Farm Counts")
+
+# Map the statistically significant clusters with p-value
+tm_shape(map_total_2019_filtered) +
+  tm_polygons("p_value", style = "fixed", breaks = c(0, 0.05, 1),
+              palette = c("red", "grey"), title = "Significant Clusters (p < 0.05)") +
+  tm_borders() +
+  tm_layout(main.title = "Significant Clusters (p < 0.05)", legend.position = c("right", "bottom"))
+
+```
+
+### **Identify Cluster Types: High-High, Low-Low, High-Low, Low-High**
+
+To further classify spatial patterns, you can categorize clusters into four types:
+
+-   **High-High (HH)**: High values surrounded by high values (hot spots).
+
+-   **Low-Low (LL)**: Low values surrounded by low values (cold spots).
+
+-   **High-Low (HL)**: High values surrounded by low values (potential outliers).
+
+-   **Low-High (LH)**: Low values surrounded by high values (potential outliers).
+
+Add these classifications to your data based on the **local_I** and **p_value**.
+
+```{r}
+map_total_2019_filtered <- map_total_2019_filtered %>%
+  mutate(cluster_type = case_when(
+    local_I > 0 & p_value < 0.05 & count.x > mean(count.x, na.rm = TRUE) ~ "High-High",
+    local_I > 0 & p_value < 0.05 & count.x < mean(count.x, na.rm = TRUE) ~ "Low-Low",
+    local_I < 0 & p_value < 0.05 & count.x > mean(count.x, na.rm = TRUE) ~ "High-Low",
+    local_I < 0 & p_value < 0.05 & count.x < mean(count.x, na.rm = TRUE) ~ "Low-High",
+    TRUE ~ "Not Significant"
+  ))
+
+tm_shape(map_total_2019_filtered) +
+  tm_polygons("cluster_type", palette = c("red", "blue", "orange", "green", "grey"),
+              title = "Cluster Type") +
+  tm_layout(main.title = "Cluster Types Based on Local Moran's I", legend.position = c("right", "bottom"))
+
+```
+
+### **Spatial Trend Analysis (Optional)**
+
+-   **Purpose**: Examine changes in spatial distribution over time, if applicable. This step is useful for datasets with a temporal component, as it reveals how spatial patterns evolve.
+
+-   **Method**: Map farm counts over several years to visualize shifts in farm distribution and identify emerging clusters.
+
+```{r}
+for (year in 2012:2023) {
+  map_year <- vietnam_eda_data %>%
+    left_join(farms_long %>% filter(year_type == paste(year, "Total")), by = "province_name")
+  
+  print(
+    tm_shape(map_year) +
+      tm_polygons("count.x", title = paste(year, "Total Farms"), palette = "Blues") +
+      tm_layout(main.title = paste("Total Farms in", year), legend.position = c("right", "bottom"))
+  )
+}
+
+```
+
+### **Summary and Interpretation**
+
+Once you have completed the spatial EDA, you should summarize and interpret your findings:
+
+-   **Global Autocorrelation (Moran’s I)**: Did you find significant clustering overall?
+
+-   **Local Clusters (LISA)**: Which specific areas exhibit significant clustering or outliers? Are there identifiable hot spots or cold spots?
+
+-   **Cluster Types**: What are the types of clusters (HH, LL, HL, LH), and what might they imply about farm distribution patterns?
+
+-   **Trends Over Time**: If applicable, how have these patterns changed over the years?
+
+### Example Summary for a Report or Blog
+
+Based on the spatial EDA of farm counts across Vietnamese provinces:
+
+-   The **Global Moran’s I** indicates a weak but positive spatial autocorrelation, suggesting some clustering of similar farm counts across regions.
+
+-   **LISA analysis** identified specific provinces with significant clustering patterns, revealing hot spots and cold spots in farm distribution. Provinces in \[list high-high clusters\] have consistently high farm counts surrounded by similar regions, potentially indicating regional agricultural hubs.
+
+-   The classification into **High-High (HH), Low-Low (LL), High-Low (HL), and Low-High (LH)** clusters provides insights into outliers and potential areas for policy intervention. For instance, High-Low clusters indicate provinces with high farm counts surrounded by low farm count areas, which may signify unique agricultural practices or resources.
+
+-   Over time, we observe \[mention any temporal trends, if applicable\].
+
+By identifying these spatial patterns, we can better understand the distribution of agricultural activity across provinces and make data-driven decisions to support regional development.

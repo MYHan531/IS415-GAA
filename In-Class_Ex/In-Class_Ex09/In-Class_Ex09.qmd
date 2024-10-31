@@ -2,7 +2,7 @@
 title: "In-Class Exercise 9: Geographical Segmentation with Spatially Constrained Clustering Techniques"
 title-block-banner: true
 author: "Han Ming Yan"
-date: 2024-10-14
+date: 2024-10-21
 date-modified: "last-modified"
 format:
   html:

@@ -1,8 +1,8 @@
 ---
-title: "In-Class Exercise 10: Geographical Segmentation with Spatially Constrained Clustering Techniques"
+title: "In-Class Exercise 10: Calibrating hedonic Pricing Model for Private Highrise property with MLR methods"
 title-block-banner: true
 author: "Han Ming Yan"
-date: 2024-10-21
+date: 2024-10-28
 date-modified: "last-modified"
 format:
   html:
@@ -15,6 +15,247 @@ format:
     embed-resources: true
     lightbox: true
     lang: en
-abstract: |
-  In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data..
 ---
+
+# Install and Load Packages
+
+```{r}
+# gtsummary will not be needed for this exercise
+pacman::p_load(olsrr, ggstatsplot, sf, tmap, tidyverse, gtsummary, performance, see, sfdep)
+```
+
+# Import Data
+
+::: {.panel-tabset style="font-size: 1.5em"}
+## Task
+
+Use appropriate tidyverse and sf functions to import the aspatial and geospatial files
+
+## Code Chunk
+
+```{r}
+condo_resale = read_csv("data/aspatial/Condo_resale_2015.csv")
+mpsz <- read_rds("data/rds/mpsz.rds")
+condo_resale_sf <- read_rds("data/rds/condo_resale_sf.rds")
+```
+:::
+
+# Correlation Analysis - ggstatsplot methods
+
+Correlation matric is an effective graphical method for checking if there are pair independent variables with high correlation. In the code chunk below, ggcorrmat() of ggstatsplot is used to plot the correlation matrix?
+
+```{r}
+ggstatsplot::ggcorrmat(condo_resale[ ,5:23])
+```
+
+## Building a Hedonic Pricing Model by using Multiple Linear Regression Method
+
+```{r}
+condo_mlr <- lm(formula = SELLING_PRICE ~ AREA_SQM + 
+                AGE + PROX_CBD + PROX_CHILDCARE + 
+                PROX_ELDERLYCARE + PROX_URA_GROWTH_AREA + 
+                PROX_HAWKER_MARKET + PROX_KINDERGARTEN + PROX_MRT + 
+                PROX_PARK + PROX_PRIMARY_SCH + PROX_TOP_PRIMARY_SCH +
+                PROX_SHOPPING_MALL + PROX_SUPERMARKET + PROX_BUS_STOP + 
+                NO_Of_UNITS + FAMILY_FRIENDLY + 
+                FREEHOLD + LEASEHOLD_99YR, 
+                data = condo_resale_sf)
+
+summary(condo_mlr)
+```
+
+## Generating Tidy Linear Regression Report
+
+```{r}
+olsrr_condo <- ols_regress(condo_mlr)
+```
+
+# Variable Selection
+
+::: panel-tabset
+## The Methods
+
+-   ols_step_forward_p
+
+-   ols_step_backwards_p
+
+-   ols_step_both_p
+
+## Code Chunk
+
+```{r}
+condo_fw_mlr <- ols_step_forward_p(condo_mlr,
+                                   p_val = 0.05,
+                                   details = FALSE) #set details = TRUE if you want a comprehensive report
+condo_fw_mlr
+```
+
+## The plot
+
+```{r}
+#| fig-width: 20
+#| fig-height: 10
+plot(condo_fw_mlr)
+```
+:::
+
+Now i will repeat the step to calibrate:
+
+-   A backward stepwise multiple linear regression, and
+
+-   a stepwise multiple linear regression
+
+::: panel-tabset
+# Step Backwards
+
+## Code Chunk
+
+```{r}
+condo_bw_mlr <- ols_step_backward_p(condo_mlr,
+                                   p_val = 0.05,
+                                   details = FALSE) #set details = TRUE if you want a comprehensive report
+condo_bw_mlr
+```
+
+## The plot
+
+```{r}
+#| fig-width: 20
+#| fig-height: 10
+plot(condo_fw_mlr)
+```
+:::
+
+# Step Both (Forwards and Backwards)
+
+::: {.panel-tabset style="font-size: 1.35em"}
+## Code Chunk
+
+```{r}
+condo_sb_mlr <- ols_step_both_p(condo_mlr,
+                                   p_val = 0.05,
+                                   details = FALSE) #set details = TRUE if you want a comprehensive report
+condo_sb_mlr
+```
+
+## The plot
+
+```{r}
+#| fig-width: 20
+#| fig-height: 10
+plot(condo_sb_mlr)
+```
+:::
+
+# Model Selection
+
+::: {.panel-tabset style="font-size: 1.5em"}
+## Comparing Performance
+
+```{r}
+metric <-  compare_performance(condo_mlr,
+                               condo_fw_mlr$model,
+                               condo_bw_mlr$model,
+                               condo_sb_mlr$model)
+
+# This code gsub() is used to tidy the test values in the "Name" field
+metric$Name <- gsub(".*\\\\([a-zA-Z0-9_]+)\\\\,\\\\model\\\\.*", "\\1", metric$Name)
+```
+
+## Visual Comparison
+
+Use plot() of the "see" package is used to plot a radar chart to compare the performance measures of the models.
+
+```{r}
+plot(metric)
+```
+
+| Note: The different indices are normalized and larger values indicate better model performance. hence, points closer to the center indicate worse fit indices.
+:::
+
+# Visualising Model Parameters
+
+```{r}
+ggcoefstats(condo_sb_mlr$model,
+            sort = "ascending")
+```
+
+# Checking for multicollinearity
+
+::: panel-tabset
+## The Concept
+
+## VIF
+
+```{r}
+check_collinearity(condo_sb_mlr$model)
+```
+
+## Visualising VIF
+
+```{r}
+plot(check_collinearity(condo_sb_mlr$model)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+note: pink is high (bad), blue is moderate, green is low (ideal)
+:::
+
+# Linearity Assumption test
+
+## Statistical interpertation
+
+```{r}
+out <- plot(check_model(condo_sb_mlr$model,
+                        panel = FALSE))
+
+out[[2]]
+```
+
+## Normality Assumption test
+
+Code chunk below uses check_morality of the performance package to perform normality assumption test.
+
+```{r}
+plot(check_normality(condo_sb_mlr$model))
+```
+
+Figure above reveals that the residual of the MLR model (i.e. condo.mlr1) is resemble normal distribution
+
+## Checking of outliers
+
+use the check_outliers of the performance package to see if there are any outliers in the model, this function makes it easy to check.
+
+```{r}
+outliers <- check_outliers(condo_sb_mlr$model, method = "cook")
+# cook method is used as it can be visualised very easily
+outliers
+```
+
+# Spatial Non-stationary Assumption
+
+The hedonic model we try to build are using geographically referenced attributes, hence it is also important for us to visual the residual of the hedonic pricing model.
+
+-   H0: The residuals are randomly distributed
+
+-   H1:
+
+::: panel-tabset
+## Step 1
+
+```{r}
+mlr_output <-  as.data.frame(condo_fw_mlr$model$residuals) %>% 
+  rename(`FW_MLR_RES` = `condo_fw_mlr$model$residuals`)
+```
+
+## Step 2
+
+```{r}
+condo_resale_sf <- cbind(condo_resale_sf,
+                         mlr_output$re)
+```
+
+## Step 3
+
+## Residual Map
+:::

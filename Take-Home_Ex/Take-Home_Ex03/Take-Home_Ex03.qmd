@@ -1,5 +1,5 @@
 ---
-title: "Take-Home Exercise 3: Uncovering Vietnam’s Economic Pulse: A Geospatial Exploration of Growth Hotspots (2012-2023)"
+title: "Take-Home Exercise 3: Prototyping Modules for Geospatial Analytics Shiny Application"
 title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-10-30
@@ -15,14 +15,101 @@ format:
     embed-resources: true
     lightbox: true
     lang: en
-abstract: |
-  The goal is to develop a prototype module for a Shiny application that analyzes potential push and pull factors affecting bus commuting patterns in Singapore. This involves visualizing spatial data, creating interactive maps, and allowing users to explore various factors influencing commuter behavior.
-keywords: ["Geospatial Analysis", "Drug Abuse", "Spatial Autocorrelation", "Thailand", "Clusters", "Hotspots"]
 ---
 
 # **Overview**
 
-This project focuses on analyzing Vietnam’s economic development from 2012 to 2023 at the provincial level. We will explore economic patterns using datasets on farms, enterprises, and industrial production to identify regional growth disparities and provide insights for policymakers and investors.
+Prototyping serves as a pivotal step in application development, bridging theoretical design with practical user interaction. A well-constructed prototype validates design decisions by providing a tangible platform to test user experience (UX) elements with stakeholders. This approach helps refine the application’s UX before further resources are invested, enhancing both efficiency and effectiveness.
+
+## **Prototyping for Shiny Application**
+
+In the context of developing a **Shiny application** using **R**, prototyping plays a crucial role in defining technical requirements, testing functionality, and refining the user interface.
+
+1.  **Evaluating R Packages**: The initial step in Shiny prototyping involves identifying and validating R packages from CRAN that support the app’s functionality. This ensures the application’s foundation is reliable and compatible with the required analyses and visualizations.
+
+2.  **Testing R Code**: Prototyping also involves running and validating specific R code snippets to confirm they produce expected outputs. This testing process helps ensure a smooth experience for end-users by troubleshooting issues early.
+
+3.  **Setting Parameters and Outputs**: Deciding on the parameters and outputs to expose in the application is a key step. These will guide user interaction and determine the dynamic nature of the app.
+
+4.  **Designing the UI with Shiny Components**: The final prototyping phase involves selecting Shiny UI components that allow users to interact with the chosen parameters intuitively.
+
+This structured approach facilitates a seamless transition from conceptual design to a fully functional application, prioritizing both technical robustness and user experience.
+
+# **Understanding Basics of Shiny**
+
+**Shiny** is an open-source R package designed to simplify the creation of interactive web applications without requiring knowledge of web design languages like HTML, CSS, or JavaScript.
+
+### **Core Components of Shiny**
+
+A Shiny application typically consists of an **`app.R`** file that includes two main sections:
+
+1.  **User Interface (UI)** - Defines the front-end layout and elements that users interact with.
+
+2.  **Server** - Contains the back-end logic, handling input-processing and output-rendering functions.
+
+This modular structure keeps the UI and server functions distinct, ensuring a clean, organized codebase.
+
+You can also turn it into a microservice like structure by creating a ui.R and a server.R, this is done when the application is complex and complicated that it would be messy and long if they are in the same app.R file.
+
+### **UI Layout in Shiny**
+
+The Shiny UI includes components like:
+
+1.  **Header Panel** (`headerPanel`): Displays the app’s title or brief descriptions.
+
+2.  **Sidebar Panel** (`sidebarPanel`): A vertical panel for input controls, offering users a way to interact with the app.
+
+3.  **Main Panel** (`mainPanel`): The primary area for output displays (e.g., maps, plots, tables).
+
+### **Flexible Layout with FluidRow and Column**
+
+Shiny employs a grid layout system through `fluidRow()` and `column()`, based on a 12-column structure, allowing flexible UI design. Each `fluidRow` can hold multiple `column` elements, enabling a variety of layouts by adjusting column widths.
+
+### **Navbar Pages for Organized Layouts**
+
+To structure complex applications, **`navbarPage()`** is available, enabling multiple sub-components within the app, each with distinct sidebar, tabset, or layout configurations.
+
+### **User Inputs and Controls in Sidebar Panel**
+
+Shiny provides various functions for defining user inputs, such as:
+
+-   **`sliderInput()`**: Creates a slider for range-based input.
+
+-   **`selectInput()`**: Generates a dropdown list.
+
+-   **`textInput()`**: Adds a text box for user input.
+
+-   **`numericInput()`**: Allows users to enter numeric values.
+
+-   **`checkboxInput()` & `checkboxGroupInput()`**: Useful for binary or multiple-choice selections.
+
+After configuring inputs, **`submitButton()`** compiles and sends inputs to the server, updating outputs accordingly.
+
+### **Outputs in Main Panel**
+
+Outputs are defined in the main panel with placeholders like:
+
+-   **`textOutput()`**, **`tableOutput()`**, and **`plotOutput()`**.
+
+-   Rendered on the UI via corresponding functions (`renderText`, `renderTable`, `renderPlot`), these components can be customized using `fluidRow()` and `column()`.
+
+### **Organizing Outputs with Tabsets**
+
+To segment content in the main panel, **`tabsetPanel()`** creates a series of tabs, helping organize multiple outputs within the application.
+
+![](images/clipboard-1653656418.png)
+
+### **Server Component**
+
+The server function processes inputs from the UI and defines outputs based on input values. It typically includes parameters for:
+
+-   **Input**: Accesses user-specified UI inputs.
+
+-   **Output**: Dictates output displays on the UI.
+
+-   **Session** (optional): Manages session-specific settings.
+
+The **UI and server interaction** is a two-way communication loop, where inputs from the UI are processed by the server, and the resulting outputs are displayed back on the UI.
 
 # Import Packages
 
@@ -155,6 +242,8 @@ tm_shape(map_fishing_2019) +
 
 ```
 
+![](images/clipboard-1291225768.png)
+
 ```{r}
 # Total farms for 2012
 
@@ -192,6 +281,8 @@ tm_shape(map_fishing_2012) +
 
 
 ```
+
+![](images/clipboard-131272105.png)
 
 # Examine Spatial Autocorrelation (Global Moran’s I)
 
@@ -328,6 +419,10 @@ tm_shape(map_total_2019_filtered) +
 
 ```
 
+![](images/clipboard-1456884285.png)
+
+![](images/clipboard-3584049050.png)
+
 ### **Identify Cluster Types: High-High, Low-Low, High-Low, Low-High**
 
 To further classify spatial patterns, you can categorize clusters into four types:
@@ -359,11 +454,17 @@ tm_shape(map_total_2019_filtered) +
 
 ```
 
-### **Spatial Trend Analysis (Optional)**
+Shiny Version:
 
--   **Purpose**: Examine changes in spatial distribution over time, if applicable. This step is useful for datasets with a temporal component, as it reveals how spatial patterns evolve.
+![](images/clipboard-2103325683.png)
 
--   **Method**: Map farm counts over several years to visualize shifts in farm distribution and identify emerging clusters.
+# **Spatial Trend Analysis**
+
+Analyzing trends over time is essential for understanding how spatial distributions evolve, particularly with datasets that include a temporal component. Tracking these changes in farm distribution allows us to pinpoint shifts and emerging clusters over the years.
+
+**Objective**: Examine farm distribution from 2012 to 2023, visualizing spatial trends and identifying any patterns or clusters that emerge.
+
+**Approach**: We’ll map total farm counts year-by-year, creating a time series of spatial snapshots that reveal how farm distribution has changed across Vietnamese provinces
 
 ```{r}
 for (year in 2012:2023) {
@@ -379,28 +480,56 @@ for (year in 2012:2023) {
 
 ```
 
+Each map highlights the total number of farms in each province for the selected year, allowing us to observe the spatial and temporal shifts in farm activity across Vietnam.
+
 ### **Summary and Interpretation**
 
-Once you have completed the spatial EDA, you should summarize and interpret your findings:
+Upon completing the Spatial Exploratory Data Analysis (EDA), we identified several key spatial patterns in farm distribution across Vietnamese provinces. These insights, derived through both global and local spatial autocorrelation methods, highlight the data's underlying spatial structure and reveal areas of potential interest for agricultural development, policy-making, and investment.
 
--   **Global Autocorrelation (Moran’s I)**: Did you find significant clustering overall?
+**1. Global Autocorrelation (Moran’s I)**: The Global Moran’s I statistic assesses whether similar values in farm counts are clustered across provinces. While the positive value suggests slight clustering, the statistical significance is marginal, indicating only a minor tendency for spatial clustering. This suggests that while there is some level of clustering in farm distribution, it’s not dominant enough to make broad assumptions about uniform spatial patterns at a global scale.
 
--   **Local Clusters (LISA)**: Which specific areas exhibit significant clustering or outliers? Are there identifiable hot spots or cold spots?
+**2. Local Clusters (LISA)**: Local Moran’s I (LISA) allows us to drill down to identify specific clusters and outliers. This granularity helps detect regional agricultural hubs (high-high clusters) and areas of low activity (low-low clusters), which may benefit from targeted interventions. By pinpointing both dense and sparse regions of farm activity, we gain insights that could drive location-specific strategies and resource allocation.
 
--   **Cluster Types**: What are the types of clusters (HH, LL, HL, LH), and what might they imply about farm distribution patterns?
+**3. Cluster Types**:
 
--   **Trends Over Time**: If applicable, how have these patterns changed over the years?
+-   **High-High (HH)**: Areas where high farm counts are surrounded by other high counts, often indicating economically significant agricultural hubs. These clusters could attract further investment or research to support efficient agricultural practices.
 
-### Example Summary for a Report or Blog
+-   **Low-Low (LL)**: Regions with consistently low farm activity may be under-resourced or lack suitable conditions for farming. These clusters present opportunities for development projects or support programs.
 
-Based on the spatial EDA of farm counts across Vietnamese provinces:
+-   **High-Low (HL) and Low-High (LH)**: These more complex clusters could indicate regions with unique agricultural characteristics, such as varying terrain, resources, or practices that affect productivity differently from their neighboring areas.
 
--   The **Global Moran’s I** indicates a weak but positive spatial autocorrelation, suggesting some clustering of similar farm counts across regions.
+**4. Temporal Trends**: By analyzing changes in farm counts year-over-year, we observed notable shifts in agricultural activity across provinces. For example, some provinces show steady growth in farm activity, while others exhibit declines, potentially due to urbanization or resource constraints. Understanding these shifts is crucial for adaptive resource planning, allowing policymakers to reallocate support dynamically based on emerging patterns.
 
--   **LISA analysis** identified specific provinces with significant clustering patterns, revealing hot spots and cold spots in farm distribution. Provinces in \[list high-high clusters\] have consistently high farm counts surrounded by similar regions, potentially indicating regional agricultural hubs.
+### **Concluding Insights for Policy and Development**
 
--   The classification into **High-High (HH), Low-Low (LL), High-Low (HL), and Low-High (LH)** clusters provides insights into outliers and potential areas for policy intervention. For instance, High-Low clusters indicate provinces with high farm counts surrounded by low farm count areas, which may signify unique agricultural practices or resources.
+Our spatial EDA of farm counts across Vietnamese provinces provides a multi-layered view of agricultural distribution and change over time. Key conclusions include:
 
--   Over time, we observe \[mention any temporal trends, if applicable\].
+-   **Global Patterns**: Global Moran’s I suggests slight clustering, but with limited strength. Thus, interventions should focus more on local patterns than overarching national trends.
 
-By identifying these spatial patterns, we can better understand the distribution of agricultural activity across provinces and make data-driven decisions to support regional development.
+-   **Local Clustering**: LISA analysis provides actionable insights into specific provinces with significant clustering patterns. For example, High-High (HH) clusters could be prioritized for investment as agricultural hubs, while Low-Low (LL) clusters might benefit from targeted support to foster growth and sustainability.
+
+-   **Yearly Trends**: Observing trends over multiple years highlights areas where agriculture is thriving or declining, offering a basis for long-term planning. For instance, increasing support in declining areas could stabilize agricultural output, while investment in growing regions could maximize returns.
+
+### **Implications for Future Research and Development**
+
+This analysis underscores the value of spatial EDA for informed decision-making, allowing stakeholders to base strategies on data-driven insights. The findings could be further refined through predictive modeling, using machine learning techniques to forecast growth areas or identify emerging clusters based on historical data.
+
+By identifying these spatial patterns and observing trends over time, policymakers, investors, and stakeholders can leverage this knowledge to support targeted, region-specific initiatives for sustainable agricultural development in Vietnam.
+
+**References**
+
+-   General Statistics Office of Vietnam. (2022). *Achievements of the agriculture industry: A year summation.* Retrieved from <https://www.gso.gov.vn/en/data-and-statistics/2022/03/achievements-of-the-agriculture-industry-a-year-summation/>
+
+-   World Bank. (n.d.). *Agricultural land (% of land area) - Vietnam.* Retrieved October 2024, from <https://data.worldbank.org/indicator/AG.LND.AGRI.ZS?locations=VN>
+
+-   Statista. (2022). *Agriculture in Vietnam - statistics & facts.* Retrieved from <https://www.statista.com/topics/5653/agriculture-in-vietnam/>
+
+-   Anselin, L., Syabri, I., & Kho, Y. (2006). *GeoDa: An introduction to spatial data analysis.* Geographical Analysis, 38(1), 5-22. doi:10.1111/j.0016-7363.2005.00671.x
+
+-   Rey, S. J., & Anselin, L. (2007). *PySAL: A Python library of spatial analytical methods.* In Fischer, M. & Getis, A. (Eds.), *Handbook of Applied Spatial Analysis* (pp. 325-338). Springer. doi:10.1007/978-3-642-03647-7_13
+
+-   Cheng, J., Karambelkar, B., & Xie, Y. (2021). *Leaflet: Create interactive web maps with the JavaScript 'Leaflet' library.* R package version 2.0.4.1. Retrieved from https://cran.r-project.org/web/packages/leaflet/index.html
+
+-   Chang, W., & Borges Ribeiro, B. (2021). *Shiny: Web application framework for R.* R package version 1.7.1. Retrieved from https://cran.r-project.org/web/packages/shiny/index.html
+
+-   Bivand, R. S., Pebesma, E., & Gómez-Rubio, V. (2013). *Applied spatial data analysis with R* (2nd ed.). Springer. doi:10.1007/978-1-4614-7618-4

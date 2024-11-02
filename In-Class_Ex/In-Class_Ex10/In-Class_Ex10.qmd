@@ -251,8 +251,8 @@ mlr_output <-  as.data.frame(condo_fw_mlr$model$residuals) %>%
 ## Step 2
 
 ```{r}
-condo_resale_sf <- cbind(condo_resale_sf,
-                         mlr_output$re)
+# condo_resale_sf <- cbind(condo_resale_sf,
+#                          mlr_output$re)
 ```
 
 ## Step 3

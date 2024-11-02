@@ -155,6 +155,44 @@ tm_shape(map_fishing_2019) +
 
 ```
 
+```{r}
+# Total farms for 2012
+
+# Total farms for 2012
+map_total_2012 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2012 Total"), by = "province_name")
+
+tm_shape(map_total_2012) +
+  tm_polygons("count.x", title = "2012 Total Farms", palette = "Greens") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Cultivation farms for 2012 
+map_cultivation_2012 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2012 Cultivation farm"), by = "province_name")
+
+tm_shape(map_cultivation_2012) +
+  tm_polygons("count.x", title = "2012 Cultivation Farms", palette = "Oranges") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Livestock farms for 2012 
+map_livestock_2012 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2012 Livestock farm"), by = "province_name")
+
+tm_shape(map_livestock_2012) +
+  tm_polygons("count.x", title = "2012 Livestock Farms", palette = "Blues") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+# Fishing farms for 2012 
+map_fishing_2012 <- vietnam_eda_data %>%
+  left_join(farms_long %>% filter(year_type == "2012 Fishing farm"), by = "province_name")
+
+tm_shape(map_fishing_2012) +
+  tm_polygons("count.x", title = "2012 Fishing Farms", palette = "Purples") +
+  tm_layout(legend.position = c("right", "bottom"))
+
+
+```
+
 # Examine Spatial Autocorrelation (Global Moran’s I)
 
 Spatial autocorrelation helps determine if farm counts are clustered, dispersed, or randomly distributed across space. **Moran’s I** is a common measure for this.

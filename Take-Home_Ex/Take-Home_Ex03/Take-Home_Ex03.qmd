@@ -223,7 +223,6 @@ vietnam_eda_data <- vietnam_provinces %>%
 ```
 
 ```{r}
-#| fig-height: 80
 # Set tmap to plot mode
 tmap_mode("plot")
 
@@ -606,6 +605,20 @@ Our spatial EDA of farm counts across Vietnamese provinces provides a multi-laye
 This analysis underscores the value of spatial EDA for informed decision-making, allowing stakeholders to base strategies on data-driven insights. The findings could be further refined through predictive modeling, using machine learning techniques to forecast growth areas or identify emerging clusters based on historical data.
 
 By identifying these spatial patterns and observing trends over time, policymakers, investors, and stakeholders can leverage this knowledge to support targeted, region-specific initiatives for sustainable agricultural development in Vietnam.
+
+# Storyboarding
+
+Storyboarding serves as an essential tool in this assignment for planning out the transformation of our Exploratory Spatial Data Analysis (ESDA) into an interactive Shiny application. By breaking down each step in the process—from data gathering and cleaning to visualisation and spatial analysis—storyboarding provides a clear, structured approach that guides us in designing each feature of the application.
+
+In this storyboard, we outline how users will interact with the app, which tools and analyses they can access, and how we’ll use Shiny components to bring these functionalities to life. For instance, we start with data cleaning and visualisation, providing users a way to see the dataset and explore different farm types across years. Then, we move into spatial analysis, enabling users to perform both Global and Local Moran's I calculations to understand clustering. Finally, we show how these components will be organised within Shiny, allowing users to interact with maps, adjust parameters, and view results dynamically.
+
+**Why We Need Storyboarding**
+
+Storyboarding is crucial because it helps us visualise the entire application flow before we start coding in Shiny. It ensures that each analytical component of ESDA is translated into an interactive feature, which will be intuitive for users. This planning process not only improves the app’s design and user experience but also helps us stay organised, ensuring that we meet the project requirements while providing a clear roadmap for development.
+
+For a computer science student or professor, storyboarding is a valuable practice in project development, as it bridges the gap between analysis and application. It allows us to foresee any potential challenges and make strategic design decisions that enhance the application’s functionality and user interaction. This storyboard is a blueprint, helping us transform complex spatial analyses into accessible, interactive tools within Shiny.
+
+![](images/clipboard-4100757778.png)
 
 # **References**
 

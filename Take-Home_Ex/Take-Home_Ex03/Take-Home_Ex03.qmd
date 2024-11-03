@@ -25,7 +25,7 @@ Prototyping serves as a pivotal step in application development, bridging theore
 
 In the context of developing a **Shiny application** using **R**, prototyping plays a crucial role in defining technical requirements, testing functionality, and refining the user interface.
 
-1.  **Evaluating R Packages**: The initial step in Shiny prototyping involves identifying and validating R packages from CRAN that support the app’s functionality. This ensures the application’s foundation is reliable and compatible with the required analyses and visualizations.
+1.  **Evaluating R Packages**: The initial step in Shiny prototyping involves identifying and validating R packages from CRAN that support the app’s functionality. This ensures the application’s foundation is reliable and compatible with the required analyses and visualisations.
 
 2.  **Testing R Code**: Prototyping also involves running and validating specific R code snippets to confirm they produce expected outputs. This testing process helps ensure a smooth experience for end-users by troubleshooting issues early.
 
@@ -138,6 +138,34 @@ head(farms_data)
 
 # Data Preparation and Cleaning
 
+Data cleaning is an important step in preparing the dataset for accurate, reliable analysis, particularly when working with spatial and temporal data. Here are the steps to clean and prepare the data:
+
+-   **Ensuring Consistent Data Types**:
+
+    -   The initial step converts all columns starting with “20” (likely years representing temporal data) to numeric values. This standardises the data type, allowing for mathematical operations, comparisons, and aggregation.
+
+    -   This transformation is necessary because inconsistent data types (e.g., characters mixed with numbers) can lead to issues during analysis, especially when calculating statistical summaries or performing visualisations.
+
+-   **Handling Missing Values**:
+
+    -   Replacing `NA` (missing) values with zero in columns starting with “20” ensures that missing data does not interfere with the analysis.
+
+    -   This is particularly important for spatial data analysis, as missing values can skew results in metrics such as Moran’s I or when calculating cluster statistics.
+
+    -   Replacing `NA` with zero is also logical in this context, assuming the absence of data indicates a count of zero farms for those years in specific provinces.
+
+-   **Reformatting the Data for Analysis**:
+
+    -   The data is converted to a “long” format using the `pivot_longer` function from the **dplyr** package, where each row represents a unique combination of province and year. This restructuring supports year-based analysis, making it easier to examine trends over time.
+
+    -   The “long” format is essential for running year-based comparisons and visualisations in time series, as well as for joining spatial and non-spatial datasets.
+
+-   **Aligning Geographic Data**:
+
+    -   Filtering out provinces not represented in the spatial (geographic) dataset ensures consistency across the spatial and economic data. This step limits the data to regions with complete spatial information, which is critical for accurate spatial joins and analysis.
+
+    -   Consistency between spatial and economic data prevents errors during mapping and spatial operations, where discrepancies in geographic identifiers can lead to missing or mismatched entries.
+
 ```{r}
 # Clean and organize the farms data for analysis
 # farms_data <- farms_data %>%
@@ -163,6 +191,22 @@ farms_data <- farms_data %>%
 ```
 
 # Exploratory Spatial Data Analysis (EDA)
+
+Exploratory Spatial Data Analysis (ESDA) serves as the first step in understanding spatial data patterns and uncovering relationships within the data. This initial phase is essential for identifying underlying spatial structures, such as clustering, dispersion, and potential outliers, before proceeding to more complex spatial modeling or predictive analysis.
+
+1.  **Purpose of ESDA**:
+
+    -   **Identify Patterns and Trends**: ESDA helps reveal patterns, such as clusters of high or low values, that would be challenging to detect in raw tabular data alone. For example, visualising farm counts by province across multiple years can show trends in agricultural activity, highlighting regions of growth or decline.
+
+    -   **Spatial Autocorrelation**: By measuring spatial autocorrelation, ESDA evaluates whether similar values are geographically clustered. A common method, Moran’s I, quantifies the degree to which high or low values group spatially. Positive spatial autocorrelation indicates clusters of similar values, while negative suggests dispersion.
+
+    -   **Localised Insights**: Local Indicators of Spatial Association (LISA) go further to detect localised clusters and outliers, helping pinpoint specific provinces where farm activity is exceptionally high or low compared to surrounding areas. These insights can guide targeted interventions, such as policies or resources for underperforming regions.
+
+2.  **Setting Up the Mapping Process**:
+
+    -   The mapping setup in `tmap` serves as the initial step for visualizing the cleaned data. By plotting variables (e.g., “Code”), we ensure that the spatial data aligns with the province data from the economic dataset, providing a foundation for analyzing spatial distribution.
+
+    -   Mapping each variable in isolation lets us verify the integrity of data merges and visualizes the geographic spread of each attribute, such as farm counts, across provinces. This setup lays the groundwork for more detailed spatial visualisations, including time-series and clustering analysis.
 
 ```{r}
 # Rename the 'Name' column in the geospatial data to 'province_name'
@@ -204,9 +248,15 @@ tm_shape(vietnam_eda_data) +
 
 ## Viewing the 2019 dataset for Vietnam
 
-```{r}
-# Total farms for 2019
+Here we focus on visualising farm data across different categories for the year 2019. By mapping each type of farm (total, cultivation, livestock, and fishing) separately, we gain insights into the spatial distribution and concentration of different farming activities across Vietnamese provinces.
 
+1.  **Total Farms for 2019**:
+
+    -   The total number of farms in each province is visualised using a green palette, representing the overall farming activity for 2019.
+
+    -   Mapping the total farms provides a baseline for understanding the distribution of agricultural activity across the country.
+
+```{r}
 # Total farms for 2019 
 map_total_2019 <- vietnam_eda_data %>%
   left_join(farms_long %>% filter(year_type == "2019 Total"), by = "province_name")
@@ -215,6 +265,27 @@ tm_shape(map_total_2019) +
   tm_polygons("count.x", title = "2019 Total Farms", palette = "Greens") +
   tm_layout(legend.position = c("right", "bottom"))
 
+```
+
+**Cultivation Farms for 2019**:
+
+-   The distribution of cultivation farms, which focus on crop production, is visualised with an orange palette.
+
+-   This map enables us to examine areas where crop-based farming is prominent, potentially identifying key agricultural regions for staple crops.
+
+**Livestock Farms for 2019**:
+
+-   The distribution of livestock farms, represented with a blue palette, highlights areas where animal husbandry is more prominent.
+
+-   This map can help identify provinces that may be more reliant on livestock production, offering insights into regional specialisation in agricultural practices.
+
+**Fishing Farms for 2019**:
+
+-   Fishing farms are visualised using a purple palette, showing provinces where fishing activities form a significant part of the agricultural landscape.
+
+-   This map is useful for understanding the contribution of aquaculture to local economies, particularly in coastal and water-rich provinces.
+
+```{r}
 # Cultivation farms for 2019 
 map_cultivation_2019 <- vietnam_eda_data %>%
   left_join(farms_long %>% filter(year_type == "2019 Cultivation farm"), by = "province_name")
@@ -244,9 +315,27 @@ tm_shape(map_fishing_2019) +
 
 ![](images/clipboard-1291225768.png)
 
-```{r}
-# Total farms for 2012
+## Comparing with 2012 Data
 
+To observe how agricultural activities have evolved, we compare the 2019 data with similar maps for 2012. This comparison helps in identifying trends over time, such as growth in certain farm types or shifts in farming practices.
+
+1.  **Total Farms for 2012**:
+
+    -   This map provides a baseline for how farm distribution has changed by 2019, potentially indicating areas of agricultural expansion or reduction.
+
+2.  **Cultivation Farms for 2012**:
+
+    -   This map allows for a direct comparison with 2019 to see where crop farming has intensified or declined.
+
+3.  **Livestock Farms for 2012**:
+
+    -   By comparing livestock farm distribution in 2012 with 2019, we can observe shifts in regions where animal farming is prominent.
+
+4.  **Fishing Farms for 2012**:
+
+    -   This map allows us to assess the stability or growth of fishing farms from 2012 to 2019, especially in coastal provinces.
+
+```{r}
 # Total farms for 2012
 map_total_2012 <- vietnam_eda_data %>%
   left_join(farms_long %>% filter(year_type == "2012 Total"), by = "province_name")
@@ -283,6 +372,8 @@ tm_shape(map_fishing_2012) +
 ```
 
 ![](images/clipboard-131272105.png)
+
+This structured comparison across years provides valuable insights into regional trends and helps inform strategies for resource allocation, investment, and policy support tailored to the needs and strengths of specific provinces.
 
 # Examine Spatial Autocorrelation (Global Moran’s I)
 
@@ -377,7 +468,7 @@ In your case, while the results do not provide strong evidence of clustering, th
 
 ## Local Moran I
 
-After calculating the **Global Moran's I**, the next steps in **Spatial Exploratory Data Analysis (Spatial EDA)** typically involve **Local Spatial Autocorrelation Analysis** and additional **visualizations** to identify specific clusters, outliers, and patterns in your data.
+After calculating the **Global Moran's I**, the next steps in **Spatial Exploratory Data Analysis (Spatial EDA)** typically involve **Local Spatial Autocorrelation Analysis** and additional **visualisations** to identify specific clusters, outliers, and patterns in your data.
 
 ### **Local Indicators of Spatial Association (LISA)**
 
@@ -516,7 +607,7 @@ This analysis underscores the value of spatial EDA for informed decision-making,
 
 By identifying these spatial patterns and observing trends over time, policymakers, investors, and stakeholders can leverage this knowledge to support targeted, region-specific initiatives for sustainable agricultural development in Vietnam.
 
-**References**
+# **References**
 
 -   General Statistics Office of Vietnam. (2022). *Achievements of the agriculture industry: A year summation.* Retrieved from <https://www.gso.gov.vn/en/data-and-statistics/2022/03/achievements-of-the-agriculture-industry-a-year-summation/>
 

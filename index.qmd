@@ -1,5 +1,13 @@
 ---
 title: "IS415-GAA ~ Han Ming Yan"
+author: "Your Name"
+format:
+  html:
+    theme: journal
+    toc: true
+    toc-location: left
+    code-copy: true
+    css: styles.css
 ---
 
 Welcome to my **IS415 Geospatial Analytics and Applications** (GAA) website! This site serves as a repository for my coursework, projects, and insights developed for the IS415 module, a core component of my final year studies in Computer Science at Singapore Management University (SMU).

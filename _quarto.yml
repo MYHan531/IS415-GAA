@@ -72,7 +72,7 @@ website:
 
 format:
   html:
-    theme: sandstone
+    theme: journal # minty, litera, journal
     css: styles.css
     toc: true
 

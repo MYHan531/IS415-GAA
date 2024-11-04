@@ -109,10 +109,18 @@ pre, code {
 }
 
 pre {
-  padding: 1em;
-  overflow: auto;
-  border: 1px solid #ddd;
-  margin: 1.5em 0;
+  white-space: pre-wrap; /* This wraps long lines of code */
+  word-wrap: break-word; /* This ensures lines break appropriately */
+  max-width: 100%; /* Restrict code block to full width of the page */
+  overflow-x: auto; /* Add horizontal scrolling only if absolutely necessary */
+  padding-right: 40px; /* Space for the copy button on the right */
+}
+
+.quarto-copy-code-button {
+  position: absolute;
+  top: 10px; /* Adjust as needed to align vertically within the code block */
+  right: 10px; /* Ensure it's positioned within the right edge of the code block */
+  z-index: 1; /* Ensures the button is on top of the code content */
 }
 
 /* Image Styling */
@@ -125,16 +133,6 @@ img {
 }
 
 /* Button Styling */
-button, .btn {
-  background-color: #f05454;
-  color: white;
-  border: none;
-  padding: 0.7em 1.5em;
-  font-size: 1em;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
 
 button:hover, .btn:hover {
   background-color: #e24444;
@@ -168,5 +166,13 @@ blockquote {
   }
   .container {
     padding: 1em;
+  }
+  pre {
+    font-size: 0.9em; /* Slightly reduce font size on smaller screens */
+    padding: 8px;
+  }
+  .quarto-copy-code-button {
+    right: 8px; /* Adjust position for smaller screens */
+    top: 8px;
   }
 }

@@ -1,8 +1,8 @@
 ---
-title: "Hands-On Exercise 9: Geographical Segmentation with Spatially Constrained Clustering Techniques"
+title: "Hands-On Exercise 09: Geographical Segmentation with Spatially Constrained Clustering Techniques"
 title-block-banner: true
 author: "Han Ming Yan"
-date: 2024-10-14
+date: 2024-10-20
 date-modified: "last-modified"
 format:
   html:
@@ -16,8 +16,7 @@ format:
     lightbox: true
     lang: en
 abstract: |
-  In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data..
-keywords: ["Geospatial Analysis", "Drug Abuse", "Spatial Autocorrelation", "Thailand", "Clusters", "Hotspots"]
+  In this hands-on exercise, you will gain hands-on experience on how to delineate homogeneous region by using geographically referenced multivariate data.
 ---
 
 # **Overview**
@@ -388,6 +387,7 @@ Now, we will delete the TS.x field by using the code chunk below.
 ```{r}
 shan_ict <- select(cluster_vars, c(2:6))
 head(shan_ict, 10)
+write_rds(shan_sf, "data/rds/shan_ict.rds")
 ```
 
 ```{r}
@@ -660,6 +660,7 @@ The code chunk below form the join in three steps:
 ```{r}
 shan_sf_cluster <- cbind(shan_sf, as.matrix(groups)) %>%
   rename(`CLUSTER`=`as.matrix.groups.`)
+write_rds(shan_sf_cluster, "data/rds/shan_sf_cluster.rds")
 ```
 
 Next, *qtm()* of **tmap** package is used to plot the choropleth map showing the cluster formed.

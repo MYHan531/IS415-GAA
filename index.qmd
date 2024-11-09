@@ -14,7 +14,7 @@ Welcome to my **IS415 Geospatial Analytics and Applications** (GAA) website! Thi
 
 ## About Me
 
-![](images/Han Ming Yan photo 2024.jpg){width="151"}
+![](images/Han%20Ming%20Yan%20photo%202024.jpg){width="151"}
 
 My name is Han Ming Yan, and I am currently in my final year as a Computer Science undergraduate at SMU. Throughout my academic journey, I’ve cultivated a strong interest in geospatial analytics, data science, and the applications of spatial data in understanding complex real-world phenomena. This course has provided a valuable opportunity to deepen my understanding of spatial data analysis, equipping me with the skills and tools to tackle complex geospatial challenges.
 

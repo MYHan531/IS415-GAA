@@ -236,12 +236,14 @@ outliers
 
 The hedonic model we try to build are using geographically referenced attributes, hence it is also important for us to visual the residual of the hedonic pricing model.
 
--   H0: The residuals are randomly distributed
+-   H0: The residuals are randomly distributed (also known as spatial stationary)
 
--   H1:
+-   H1: The residuals re spatially non-stationary
 
 ::: panel-tabset
 ## Step 1
+
+Export the residual of the hedonic pricing model and save it as a data frame
 
 ```{r}
 mlr_output <-  as.data.frame(condo_fw_mlr$model$residuals) %>% 
@@ -250,12 +252,72 @@ mlr_output <-  as.data.frame(condo_fw_mlr$model$residuals) %>%
 
 ## Step 2
 
+Join the newly created data frame with *condo_resale_sf* object.
+
 ```{r}
-# condo_resale_sf <- cbind(condo_resale_sf,
-#                          mlr_output$re)
+condo_resale_sf <- cbind(condo_resale_sf, 
+                        mlr_output$FW_MLR_RES) %>%
+  rename(`MLR_RES` = `mlr_output.FW_MLR_RES`)
 ```
 
-## Step 3
+## Step 3 (Residual Map)
 
-## Residual Map
+Next, we will use **tmap** package to display the distribution of the residuals on an interactive map.
+
+The code churn below will turn on the interactive mode of tmap.
+
+Figure below reveals that there is sign of spatial autocorrelation.
+
+```{r}
+tmap_mode("view")
+tm_shape(mpsz)+
+  tmap_options(check.and.fix = TRUE) +
+  tm_polygons(alpha = 0.4) +
+tm_shape(condo_resale_sf) +  
+  tm_dots(col = "MLR_RES",
+          alpha = 0.6,
+          style="quantile") 
+tmap_mode("plot")
+```
+:::
+
+## Spatial stationary test
+
+To prove that our observation is indeed true, the Moran's I test will be performed
+
+::: panel-tabset
+## Step 1
+
+First, we will compute the distance-based weight matrix by using [`dnearneigh()`](https://r-spatial.github.io/spdep/reference/dnearneigh.html) function of **spdep**.
+
+```{r}
+condo_resale_sf <- condo_resale_sf %>%
+  mutate(nb = st_knn(geometry, k=6,
+                     longlat = FALSE),
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1)
+```
+
+## Step 2
+
+Next, [`global_moran_perm()`](https://sfdep.josiahparry.com/reference/global_moran_perm) of sfdep is used to perform global Moran permutation test.
+
+```{r}
+global_moran_perm(condo_resale_sf$MLR_RES, 
+                  condo_resale_sf$nb, 
+                  condo_resale_sf$wt, 
+                  alternative = "two.sided", 
+                  nsim = 99)
+```
+
+## Output
+
+![](images/clipboard-1593271612.png)
+
+## Statistical Interpertation
+
+The Global Moran’s I test for residual spatial autocorrelation shows that **it’s p-value is less than the alpha value of 0.05**. Hence, we **reject the null hypothesis** that the residuals are randomly distributed.
+
+Since the Observed Global Moran I = 0.25586 which is greater than 0, we can **infer** that the residuals resemble **cluster distribution**.
 :::

@@ -1,6 +1,6 @@
 ---
 title: "IS415-GAA ~ Han Ming Yan"
-author: "Your Name"
+author: "Han Ming Yan"
 format:
   html:
     theme: journal

@@ -1,1 +1,125 @@
+---
+title: "In-Class Exercise 11: Calibrating hedonic Pricing Model for Private Highrise property with MLR methods"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-11-04
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
+---
 
+# Loading R packages
+
+```{r}
+pacman::p_load(tidyverse, sf, tmap, httr, performance)
+```
+
+# Importing Data
+
+```{r}
+folder_path <-  "data/aspatial"
+file_list <-  list.files(path = folder_path,
+                         pattern = "^realis.*\\.csv$",
+                         full.names = TRUE)
+realis_data <- file_list %>% 
+  map_dfr(read_csv)
+# map_dfr is from the purrr package, it will already be in a tibber form once read
+```
+
+# Wrangling Data
+
+We will now write a code chunk to perform the following:
+
+```{r}
+# We will use the dmy function from the lubridate package (part of the tidyverse package) and also the mutate and filter function from the dplyr package
+condo_resale <- realis_data %>% 
+  mutate(`Sale Date` = dmy(`Sale Date`)) %>% 
+  filter(`Type of Sale` == "Resale" & `Property Type` == "Condominium")
+```
+
+# GeoCoding
+
+::: panel-tabset
+## Preparing Data
+
+```{r}
+postcode <- unique(condo_resale$`Postal Code`)
+```
+
+## Geocode (Reverse Geocoding)
+
+```{r}
+url <- "https://onemap.gov.sg/api/common/elastic/search"
+found <- data.frame()
+not_found <- data.frame()
+
+for (post in postcode) {
+  query <-  list('searchVal'=post, 'returnGeom' = 'Y',
+                 'getAddrDetails' = 'Y', 'pageNum'='1')
+  res <- GET(url, query=query)
+  if(content(res)$found !=0) {
+    found <- rbind(found, data.frame(content(res))[4:13])
+  } else {not_found = data.frame(post)}
+}
+```
+:::
+
+# Tidying Field Names
+
+```{r}
+found <- found %>% 
+  select(c(6:8)) %>% 
+  rename(POSTAL = `results.POSTAL`,
+         XCOORD = `results.X`,
+         YCOORD = `results.Y`)
+```
+
+# Joining Tables
+
+```{r}
+#| echo: FALSE
+condo_resale_geocoded = left_join(
+  condo_resale, found, by = c('Postal Code' = 'POSTAL'))
+
+```
+
+# Converting to sf
+
+```{r}
+#| echo: FALSE
+condo_resale_sf <- st_as_sf(condo_resale_geocoded,
+                            coords = c("XCOORD", "YCOORD"),
+                            crs=3414)
+```
+
+# Cleaning Spatial Data
+
+::: panel-tabset
+## Checking for overlapping point features
+
+This code chunk below is used to check if there are overlapping point features. (Returns True or False only. If true, need to do spatial jittering to shift them a bit, to prevent overlapping)
+
+```{r}
+overlapping_points <- condo_resale_sf %>% 
+  mutate(overlap = lengths(st_equals(., .)) > 1)
+```
+
+## Spatial Jittering
+
+This code chunk below, st_jitter() of the sf package is used to move the point features by 5m to avoid overlapping point features.
+
+```{r}
+condo_resale_sf <- condo_resale_sf %>% 
+  st_jitter(amount=2)
+# double check for any possible overlapping points by viewing the overlapping_points, make sure the whole overlap column has the FALSE value before continuing
+```
+:::

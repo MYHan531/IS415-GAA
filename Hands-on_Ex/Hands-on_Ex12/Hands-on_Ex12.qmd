@@ -1,6 +1,20 @@
 ---
-title: "Hands-on Exercise 11"
-author: "Javier Lian"
+title: "Hands-on Exercise 12 - Geographically Weighted Predictive Modelling"
+title-block-banner: true
+author: "Han Ming Yan"
+date: 2024-10-27
+date-modified: "last-modified"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: true
+    number-depth: 3
+    code-copy: true
+    embed-resources: true
+    lightbox: true
+    lang: en
 ---
 
 ## **Overview**
@@ -91,7 +105,7 @@ pacman::p_load(sf, spdep, GWmodel, SpatialML,
 Reading the input data sets. It is in simple feature data frame.
 
 ```{r}
-mdata <- read_rds("data/model/mdata.rds")
+mdata <- read_rds("data/rds/mdata.rds")
 ```
 
 ### **Data Sampling**
@@ -107,8 +121,8 @@ test_data <- testing(resale_split)
 ```
 
 ```{r}
-write_rds(train_data, "data/model/train_data.rds")
-write_rds(test_data, "data/model/test_data.rds")
+write_rds(train_data, "data/rds/train_data.rds")
+write_rds(test_data, "data/rds/test_data.rds")
 ```
 
 ## **Computing Correlation Matrix**
@@ -130,8 +144,8 @@ corrplot::corrplot(cor(mdata_nogeo[, 2:17]),
 ## **Retrieving the Stored Data**
 
 ```{r}
-train_data <- read_rds("data/model/train_data.rds")
-test_data <- read_rds("data/model/test_data.rds")
+train_data <- read_rds("data/rds/train_data.rds")
+test_data <- read_rds("data/rds/test_data.rds")
 ```
 
 ## **Building a non-spatial multiple linear regression**
@@ -149,7 +163,7 @@ summary(price_mlr)
 ```
 
 ```{r}
-write_rds(price_mlr, "data/model/price_mlr.rds" ) 
+write_rds(price_mlr, "data/rds/price_mlr.rds" ) 
 ```
 
 ## **Preparing coordinates data**
@@ -167,8 +181,8 @@ coords_test <- st_coordinates(test_data)
 Before continue, we write all the output into rds for future used.
 
 ```{r}
-coords_train <- write_rds(coords_train, "data/model/coords_train.rds" )
-coords_test <- write_rds(coords_test, "data/model/coords_test.rds" )
+coords_train <- write_rds(coords_train, "data/rds/coords_train.rds" )
+coords_test <- write_rds(coords_test, "data/rds/coords_test.rds" )
 ```
 
 ### **Droping geometry field**
@@ -197,11 +211,11 @@ rf
 ```
 
 ```{r}
-write_rds(rf, "data/model/rf.rds")
+write_rds(rf, "data/rds/rf.rds")
 ```
 
 ```{r}
-rf <- read_rds("data/model/rf.rds")
+rf <- read_rds("data/rds/rf.rds")
 rf
 ```
 
@@ -230,13 +244,13 @@ gwRF_adaptive <- grf(formula = resale_price ~ floor_area_sqm + storey_order +
 Let’s save the model output by using the code chunk below.
 
 ```{r}
-write_rds(gwRF_adaptive, "data/model/gwRF_adaptive.rds")
+write_rds(gwRF_adaptive, "data/rds/gwRF_adaptive.rds")
 ```
 
 The code chunk below can be used to retrieve the save model in future.
 
 ```{r}
-gwRF_adaptive <- read_rds("data/model/gwRF_adaptive.rds")
+gwRF_adaptive <- read_rds("data/rds/gwRF_adaptive.rds")
 ```
 
 ### **Predicting by using test data**
@@ -266,7 +280,7 @@ gwRF_pred <- predict.grf(gwRF_adaptive,
 Before moving on, let us save the output into rds file for future use.
 
 ```{r}
-GRF_pred <- write_rds(gwRF_pred, "data/model/GRF_pred.rds")
+GRF_pred <- write_rds(gwRF_pred, "data/rds/GRF_pred.rds")
 ```
 
 #### Converting the predicting output into a data frame
@@ -274,7 +288,7 @@ GRF_pred <- write_rds(gwRF_pred, "data/model/GRF_pred.rds")
 The output of the `predict.grf()` is a vector of predicted values. It is wiser to convert it into a data frame for further visualisation and analysis.
 
 ```{r}
-GRF_pred <- read_rds("data/model/GRF_pred.rds")
+GRF_pred <- read_rds("data/rds/GRF_pred.rds")
 GRF_pred_df <- as.data.frame(GRF_pred)
 ```
 
@@ -285,7 +299,7 @@ test_data_p <- cbind(test_data, GRF_pred_df)
 ```
 
 ```{r}
-write_rds(test_data_p, "data/model/test_data_p.rds")
+write_rds(test_data_p, "data/rds/test_data_p.rds")
 ```
 
 ### **Calculating Root Mean Square Error**

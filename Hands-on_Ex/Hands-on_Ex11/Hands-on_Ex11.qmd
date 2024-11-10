@@ -1,5 +1,5 @@
 ---
-title: "Hands-On_Ex12 - Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method (continued)"
+title: "Hands-On_Ex11 - Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method (continued)"
 title-block-banner: true
 author: "Han Ming Yan"
 date: 2024-10-27
